@@ -1,0 +1,8 @@
+name = "holo-deck"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "holo-deck"
+database_id = "640584e6-2a4d-4c45-9d9c-4217fd3ff53a"

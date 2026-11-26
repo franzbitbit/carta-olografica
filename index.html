@@ -154,7 +154,7 @@ button{font:inherit;color:inherit}
 #login{display:grid;place-items:center;text-align:center;background:radial-gradient(60% 45% at 50% 40%,color-mix(in srgb,var(--c1) 30%,transparent),transparent 70%),#07080e}
 #login form{width:min(360px,100%);display:grid;gap:14px;justify-items:center}
 #login h1{margin:0;font:400 clamp(52px,14vw,76px)/.9 'Bebas Neue',Impact,sans-serif}
-#login p{margin:0;color:#a9aec4}
+#login p{margin:0;color:#a9aec4}#login .err{color:#ff9db5;min-height:1.4em;font-size:14px}
 #login input{width:100%;font:18px Outfit,system-ui,sans-serif;text-align:center;color:#fff;background:#0f111d;border:1px solid #2f3352;border-radius:14px;padding:14px}
 .ghost{width:120px;aspect-ratio:63/88;border-radius:10px;margin-bottom:8px;background:linear-gradient(135deg,var(--c3),var(--c1) 35%,var(--c2) 65%,var(--c0));padding:6px;rotate:-8deg;box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 60px color-mix(in srgb,var(--c2) 35%,transparent);animation:float 5s ease-in-out infinite}
 .ghost div{height:100%;border-radius:7px;background:linear-gradient(180deg,#1d2239,#0c0d17)}
@@ -241,8 +241,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  <form id="loginForm">
   <div class="ghost"><div></div></div>
   <h1>Holo deck</h1>
-  <p>Whose deck is this? Enter your name to open it.</p>
-  <input id="loginName" maxlength="24" autocomplete="given-name" placeholder="e.g. Lorenzo" required>
+  <p>Whose deck is this? Enter your name and PIN.<br>New name? Pick a PIN and your deck is created.</p>
+  <input id="loginName" maxlength="24" autocomplete="username" placeholder="Name, e.g. Lorenzo" required aria-label="Name">
+  <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" placeholder="4-digit PIN" aria-label="4-digit PIN" style="letter-spacing:.5em">
+  <p class="err" id="loginErr" role="alert"></p>
   <button class="btn lit" type="submit" style="width:100%">Open my deck</button>
  </form>
 </section>
@@ -251,7 +253,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 {
 /* ================= Configuration ================= */
 // URL of the stylisation service (Cloudflare Worker in front of Gemini). Empty = only "Original" style.
-const AI_ENDPOINT = (() => { try { return localStorage.getItem('holo.ai') || ''; } catch { return ''; } })();
+// Deck API (Cloudflare Worker). Empty = offline mode: decks stay on this device only.
+const API_DEFAULT = 'https://holo-deck.baitafrancesco.workers.dev';
+const API = ((() => { try { return localStorage.getItem('holo.api'); } catch { return null; } })() ?? API_DEFAULT).replace(/\/+$/, '');
+const SEG_MODEL = 'Xenova/modnet';
 const DEPTH_MODEL = 'onnx-community/depth-anything-v2-small';
 const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.1';
 const THEMES = {
@@ -294,7 +299,7 @@ let themeRGB = THEMES.violet.map(rgb);
 function applyTheme(color) {
   const c = themeColors(color);
   c.forEach((v, i) => document.documentElement.style.setProperty('--c' + i, v));
-  themeRGB = c.map(rgb);
+  themeRGB = c.map(rgb); dirty = true;
 }
 
 /* ================= Textures: sparkle, grain, foil patterns ================= */
@@ -334,37 +339,75 @@ card.style.setProperty('--sp', `url(${sparkle()})`);
 const GRAIN = `url(${grain()})`, NONE = 'linear-gradient(transparent,transparent)';
 function applyPattern(k) { card.style.setProperty('--pat', k === 'none' ? NONE : `url(${patURL(k)})`); card.style.setProperty('--grain', k === 'none' ? NONE : GRAIN); }
 
-/* ================= Demo scene ================= */
+/* ================= Demo scene (colour, background plate and relief+mask drawn together) ================= */
 function demoScene() {
-  const W = 900, H = 900, c = mk(W, H), d = mk(W, H), g = c.getContext('2d'), h = d.getContext('2d');
+  const W = 900, H = 900, bg = mk(W, H), g = bg.getContext('2d');
   let gr = g.createLinearGradient(0, 0, 0, H);
   [[0, '#0f1130'], [.45, '#2c1f62'], [.75, '#8b3d9e'], [1, '#e48ad0']].forEach(s => gr.addColorStop(...s));
-  g.fillStyle = gr; g.fillRect(0, 0, W, H); h.fillStyle = '#000'; h.fillRect(0, 0, W, H);
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 200; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * .8 + .1})`; const s = Math.random() * 2.2 + .4; g.fillRect(Math.random() * W, Math.random() * H * .55, s, s); }
-  const L = [['#3a2a78', '#7b63c9', 60, .48, 110, 2.2, 1], ['#2a1d5e', '#5c44a6', 105, .58, 110, 3.1, 2], ['#1b1342', '#45307e', 155, .70, 90, 1.7, 3], ['#0d0a22', '#2c1f55', 200, .83, 70, 2.6, 4]];
-  for (const [col, rim, dv, base, amp, f, s] of L) {
-    const ridge = x => H * base - amp * (.55 * Math.sin(x / W * f * 6.28 + s) + .3 * Math.sin(x / W * f * 13.1 + s * 2) + .15 * Math.sin(x / W * 31 + s));
-    for (const [ctx, fill] of [[g, null], [h, `rgb(${dv},${dv},${dv})`]]) {
-      ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 6) ctx.lineTo(x, ridge(x)); ctx.lineTo(W, H); ctx.closePath();
-      if (fill) ctx.fillStyle = fill; else { const lg = g.createLinearGradient(0, H * base - amp, 0, H); lg.addColorStop(0, rim); lg.addColorStop(.25, col); ctx.fillStyle = lg; }
-      ctx.fill();
-    }
+  const L = [['#3a2a78', '#7b63c9', .48, 110, 2.2, 1], ['#2a1d5e', '#5c44a6', .58, 110, 3.1, 2], ['#1b1342', '#45307e', .70, 90, 1.7, 3], ['#0d0a22', '#2c1f55', .83, 70, 2.6, 4]];
+  for (const [col, rim, base, amp, f, s] of L) {
+    g.beginPath(); g.moveTo(0, H);
+    for (let x = 0; x <= W; x += 6) g.lineTo(x, H * base - amp * (.55 * Math.sin(x / W * f * 6.28 + s) + .3 * Math.sin(x / W * f * 13.1 + s * 2) + .15 * Math.sin(x / W * 31 + s)));
+    g.lineTo(W, H); g.closePath(); const lg = g.createLinearGradient(0, H * base - amp, 0, H); lg.addColorStop(0, rim); lg.addColorStop(.25, col); g.fillStyle = lg; g.fill();
   }
-  const ox = 450, oy = 520, or = 120;
-  let rg = g.createRadialGradient(ox, oy, 0, ox, oy, or * 2.4); rg.addColorStop(0, 'rgba(200,140,255,.45)'); rg.addColorStop(1, 'rgba(200,140,255,0)'); g.fillStyle = rg; g.fillRect(0, 0, W, H);
-  rg = g.createRadialGradient(ox - 40, oy - 45, 8, ox, oy, or); [[0, '#ffffff'], [.25, '#f3d6ff'], [.7, '#a66bff'], [1, '#43218f']].forEach(s => rg.addColorStop(...s)); g.fillStyle = rg; g.beginPath(); g.arc(ox, oy, or, 0, 7); g.fill();
-  rg = h.createRadialGradient(ox, oy, 0, ox, oy, or); rg.addColorStop(0, '#fff'); rg.addColorStop(1, '#d2d2d2'); h.fillStyle = rg; h.beginPath(); h.arc(ox, oy, or, 0, 7); h.fill();
-  return {img: c, depth: d};
+  const img = mk(W, H), x = img.getContext('2d'); x.drawImage(bg, 0, 0);
+  const ox = 450, oy = 520, or = 140;
+  let rg = x.createRadialGradient(ox, oy, 0, ox, oy, or * 2.4); rg.addColorStop(0, 'rgba(200,140,255,.45)'); rg.addColorStop(1, 'rgba(200,140,255,0)'); x.fillStyle = rg; x.fillRect(0, 0, W, H);
+  rg = x.createRadialGradient(ox - 45, oy - 50, 8, ox, oy, or); [[0, '#ffffff'], [.25, '#f3d6ff'], [.7, '#a66bff'], [1, '#43218f']].forEach(s => rg.addColorStop(...s)); x.fillStyle = rg; x.beginPath(); x.arc(ox, oy, or, 0, 7); x.fill();
+  const dm = mk(256, 256), d = dm.getContext('2d'), id = d.createImageData(256, 256), k = 256 / W;
+  for (let j = 0; j < 256; j++) for (let i = 0; i < 256; i++) {
+    const dx = (i - ox * k) / (or * k), dy = (j - oy * k) / (or * k), r2 = dx * dx + dy * dy, o = (j * 256 + i) * 4;
+    const m = r2 < 1 ? 255 : 0; id.data[o] = r2 < 1 ? 128 + Math.sqrt(1 - r2) * 110 : 128; id.data[o + 1] = m; id.data[o + 3] = 255;
+  }
+  d.putImageData(id, 0, 0); d.filter = 'blur(1px)'; d.drawImage(dm, 0, 0);
+  return {img, bg, dm};
 }
-function guessDepth(w, h) {
-  const c = mk(w, h), x = c.getContext('2d');
-  x.fillStyle = '#262626'; x.fillRect(0, 0, w, h); x.filter = `blur(${Math.round(w * .07)}px)`;
-  x.fillStyle = '#bdbdbd'; x.beginPath(); x.ellipse(w * .5, h * 1.02, w * .46, h * .42, 0, 0, 7); x.fill();
-  x.fillStyle = '#fff'; x.beginPath(); x.ellipse(w * .5, h * .4, w * .21, h * .2, 0, 0, 7); x.fill();
-  return c;
+/* fallbacks when the AI models can't run */
+function guessMask(w, h) {
+  const c = mk(w, h), x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, w, h); x.filter = `blur(${Math.round(w * .02)}px)`; x.fillStyle = '#fff';
+  x.beginPath(); x.ellipse(w * .5, h * .38, w * .2, h * .19, 0, 0, 7); x.fill();
+  x.beginPath(); x.ellipse(w * .5, h * 1.05, w * .44, h * .45, 0, 0, 7); x.fill(); return c;
+}
+function guessRelief(w, h) {
+  const c = mk(w, h), x = c.getContext('2d'); x.fillStyle = '#404040'; x.fillRect(0, 0, w, h); x.filter = `blur(${Math.round(w * .08)}px)`;
+  x.fillStyle = '#b0b0b0'; x.beginPath(); x.ellipse(w * .5, h * 1.02, w * .46, h * .42, 0, 0, 7); x.fill();
+  x.fillStyle = '#fff'; x.beginPath(); x.ellipse(w * .5, h * .4, w * .19, h * .18, 0, 0, 7); x.fill(); return c;
+}
+/* pack relief (R) + person mask (G) into one small texture; relief is measured only inside the person */
+function packDM(depthSrc, maskSrc, W, H) {
+  const k = Math.min(1, 512 / Math.max(W, H)), w = Math.max(1, Math.round(W * k)), h = Math.max(1, Math.round(H * k));
+  const read = (src, blur) => { const c = mk(w, h), x = c.getContext('2d', {willReadFrequently: true}); if (blur) x.filter = `blur(${blur}px)`; x.drawImage(src, 0, 0, w, h); return x.getImageData(0, 0, w, h).data; };
+  const D = read(depthSrc, Math.max(1.5, w * .014)), Mk = read(maskSrc, .6);
+  const vals = []; for (let i = 0; i < D.length; i += 4) if (Mk[i] > 140) vals.push(D[i]);
+  vals.sort((a, b) => a - b);
+  const p = q => vals.length ? vals[Math.min(vals.length - 1, Math.floor(q * vals.length))] : 128;
+  const mid = p(.5), span = Math.max(14, p(.96) - p(.04));
+  const out = mk(w, h), ox = out.getContext('2d'), id = ox.createImageData(w, h);
+  for (let i = 0; i < D.length; i += 4) {
+    const m = Mk[i] / 255, r = Math.max(0, Math.min(255, 128 + (D[i] - mid) / span * 190));
+    id.data[i] = 128 + (r - 128) * m; id.data[i + 1] = Mk[i]; id.data[i + 3] = 255;
+  }
+  ox.putImageData(id, 0, 0); return out;
+}
+/* background plate without AI: erase the (dilated) person and pull colour in from around it */
+function maskAlpha(mask, W, H, grow) {
+  const c = mk(W, H), x = c.getContext('2d', {willReadFrequently: true}); x.filter = `blur(${grow}px)`; x.drawImage(mask, 0, 0, W, H);
+  const id = x.getImageData(0, 0, W, H); for (let i = 0; i < id.data.length; i += 4) { id.data[i + 3] = id.data[i] > 18 ? 255 : 0; id.data[i] = id.data[i + 1] = id.data[i + 2] = 0; }
+  x.putImageData(id, 0, 0); return c;
+}
+function fillBehind(src, mask) {
+  const W = src.width, H = src.height, base = mk(W, H), b = base.getContext('2d');
+  b.drawImage(src, 0, 0); b.globalCompositeOperation = 'destination-out'; b.drawImage(maskAlpha(mask, W, H, Math.round(W * .015)), 0, 0);
+  const levels = [base]; let l = base;
+  while (Math.max(l.width, l.height) > 6) { const n = mk(Math.max(1, l.width >> 1), Math.max(1, l.height >> 1)); n.getContext('2d').drawImage(l, 0, 0, n.width, n.height); levels.push(n); l = n; }
+  const out = mk(W, H), o = out.getContext('2d'); o.imageSmoothingQuality = 'high';
+  for (let i = levels.length - 1; i >= 0; i--) o.drawImage(levels[i], 0, 0, W, H);
+  return out;
 }
 
-/* ================= WebGL: photo parallax from the depth map ================= */
+/* ================= WebGL: layered parallax — background plate + person relief + normal-map lighting ================= */
 const PREC = '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n';
 const VS = 'attribute vec2 p;varying vec2 v;void main(){v=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}';
 function program(gl, fs, names) {
@@ -375,20 +418,31 @@ function program(gl, fs, names) {
   const U = {}; for (const n of names) U[n] = gl.getUniformLocation(p, n); return U;
 }
 const gl = cv.getContext('webgl', {antialias: false, premultipliedAlpha: false});
-const FS = `varying vec2 v;uniform sampler2D uImg,uDep;uniform vec2 uTilt,uScale,uOff;uniform float uFocus,uStr,uZoom;
-vec2 M(vec2 u){return u*uScale+uOff;}
-float D(vec2 u){return texture2D(uDep,M(u)).r;}
+const FS = `varying vec2 v;uniform sampler2D uImg,uBg,uDM;uniform vec2 uTilt,uScale,uOff;uniform float uStr,uZoom,uRelief;uniform vec3 uTint;
+vec2 M(vec2 u){return clamp(u,0.,1.)*uScale+uOff;}
+vec4 DM(vec2 u){return texture2D(uDM,M(u));}
 void main(){
  vec2 b=(v-.5)/uZoom+.5, s=b;
- for(int i=0;i<10;i++){ s=mix(s, b-uTilt*uStr*(D(s)-uFocus), .65); }
- float d=D(s); vec3 c=texture2D(uImg,M(s)).rgb;
- c*=1.+.10*(d-uFocus)*(-uTilt.x*.5-uTilt.y*.8);
- gl_FragColor=vec4(c,1.);
+ for(int i=0;i<8;i++){ s=mix(s, b-uTilt*uStr*(DM(s).r-.5)*uRelief, .6); }
+ vec4 dm=DM(s); float a=smoothstep(.3,.7,dm.g);
+ vec2 sb=(b-.5)/1.06+.5+uTilt*uStr*.9;
+ vec3 bg=texture2D(uBg,M(sb)).rgb*.88;
+ vec3 fg=texture2D(uImg,M(s)).rgb;
+ float e=1./300.;
+ float rx=DM(s+vec2(e,0.)).r-DM(s-vec2(e,0.)).r, ry=DM(s+vec2(0.,e)).r-DM(s-vec2(0.,e)).r;
+ vec3 n=normalize(vec3(-rx*16.,-ry*16.,1.));
+ float tl=min(1.,length(uTilt));
+ vec3 L=normalize(vec3(uTilt*1.1,.85));
+ fg*=1.+.3*(dot(n,L)-L.z);
+ float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),22.)*a;
+ fg+=uTint*spec*.28*tl;
+ float rim=smoothstep(.12,.42,dm.g)*(1.-smoothstep(.55,.92,dm.g));
+ gl_FragColor=vec4(mix(bg,fg,a)+uTint*rim*(.06+.26*tl),1.);
 }`;
 let U = null;
-try { if (gl) { U = program(gl, FS, ['uImg', 'uDep', 'uTilt', 'uScale', 'uOff', 'uFocus', 'uStr', 'uZoom']); gl.uniform1i(U.uImg, 0); gl.uniform1i(U.uDep, 1); } } catch (e) { console.warn(e); U = null; }
+try { if (gl) { U = program(gl, FS, ['uImg', 'uBg', 'uDM', 'uTilt', 'uScale', 'uOff', 'uStr', 'uZoom', 'uRelief', 'uTint']); gl.uniform1i(U.uImg, 0); gl.uniform1i(U.uBg, 1); gl.uniform1i(U.uDM, 2); } } catch (e) { console.warn(e); U = null; }
 const ctx2d = U ? null : cv.getContext('2d');
-let ready = false, dirty = true, imgCanvas = null, view = {focus: .5, pos: .25, ia: 1};
+let ready = false, dirty = true, imgCanvas = null, view = {pos: .25, ia: 1};
 function tex(unit, src) {
   gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
   for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v);
@@ -396,19 +450,12 @@ function tex(unit, src) {
 }
 function fit(src, max) {
   const w = src.naturalWidth || src.width, h = src.naturalHeight || src.height, k = Math.min(1, max / Math.max(w, h));
-  const c = mk(Math.round(w * k), Math.round(h * k)); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c;
+  const c = mk(Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k))); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height); return c;
 }
-function prepDepth(src) {
-  const s = fit(src, 512), c = mk(s.width, s.height), x = c.getContext('2d', {willReadFrequently: true});
-  x.filter = `blur(${Math.max(1, s.width * .012).toFixed(1)}px)`; x.drawImage(s, 0, 0); x.filter = 'none';
-  const px = x.getImageData(c.width * .35 | 0, c.height * .2 | 0, c.width * .3 | 0, c.height * .35 | 0).data;
-  let sum = 0; for (let i = 0; i < px.length; i += 4) sum += px[i]; view.focus = sum / (px.length / 4) / 255;
-  return c;
-}
-function setScene(img, depth, pos = .25) {
-  imgCanvas = fit(img, U ? Math.min(2048, gl.getParameter(gl.MAX_TEXTURE_SIZE)) : 1600); view.ia = imgCanvas.width / imgCanvas.height; view.pos = pos;
-  const dc = prepDepth(depth || guessDepth(imgCanvas.width >> 2, imgCanvas.height >> 2));
-  if (U) { tex(0, imgCanvas); tex(1, dc); }
+function setLayers(img, bg, dm, pos = .25) {
+  const max = U ? Math.min(2048, gl.getParameter(gl.MAX_TEXTURE_SIZE)) : 1600;
+  imgCanvas = fit(img, max); view.ia = imgCanvas.width / imgCanvas.height; view.pos = pos;
+  if (U) { tex(0, imgCanvas); tex(1, fit(bg || img, 1280)); tex(2, fit(dm, 512)); }
   ready = true; dirty = true; resize();
 }
 function resize() {
@@ -422,7 +469,7 @@ function draw(t) {
   if (U) {
     gl.viewport(0, 0, cv.width, cv.height);
     gl.uniform2f(U.uTilt, t.x, t.y); gl.uniform2f(U.uScale, sc[0], sc[1]); gl.uniform2f(U.uOff, off[0], off[1]);
-    gl.uniform1f(U.uFocus, view.focus); gl.uniform1f(U.uStr, .045); gl.uniform1f(U.uZoom, 1.07);
+    gl.uniform1f(U.uStr, .05); gl.uniform1f(U.uZoom, 1.06); gl.uniform1f(U.uRelief, .75); gl.uniform3f(U.uTint, ...themeRGB[3]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   } else {
     const W = cv.width, H = cv.height;
@@ -532,8 +579,16 @@ function frame(now) {
 }
 requestAnimationFrame(frame);
 
-/* ================= Deck storage (on this device; swap for a server later) ================= */
-const DB = (() => {
+/* ================= Deck storage: server (Worker + D1) when API is set, otherwise this device ================= */
+let token = store('holo.token'), aiReady = false;
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, {...opts, headers: {...(opts.headers || {}), Authorization: 'Bearer ' + token}});
+  if (r.status === 401) { token = null; store('holo.token', null); showLogin('Your session ended. Sign in again.'); throw new Error('auth'); }
+  if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'HTTP ' + r.status); }
+  return r;
+}
+const metaOf = c => ({title: c.title, desc: c.desc, attacks: c.attacks, color: c.color, pattern: c.pattern, style: c.style, created: c.created});
+const Local = (() => {
   const mem = new Map(); let p = null;
   const open = () => p || (p = new Promise((ok, ko) => { const r = indexedDB.open('holo-deck', 1); r.onupgradeneeded = () => r.result.createObjectStore('cards', {keyPath: 'id'}).createIndex('owner', 'owner'); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); }));
   const run = async (mode, fn) => { const db = await open(); return new Promise((ok, ko) => { const t = db.transaction('cards', mode), q = fn(t.objectStore('cards')); t.oncomplete = () => ok(q.result); t.onerror = () => ko(t.error); }); };
@@ -541,9 +596,26 @@ const DB = (() => {
   return {
     list: owner => safe(() => run('readonly', s => s.index('owner').getAll(owner)), () => [...mem.values()].filter(c => c.owner === owner)),
     put: c => safe(() => run('readwrite', s => s.put(c)), () => mem.set(c.id, c)),
-    del: id => safe(() => run('readwrite', s => s.delete(id)), () => mem.delete(id))
+    del: id => safe(() => run('readwrite', s => s.delete(id)), () => mem.delete(id)),
+    ensure: async () => {}
   };
 })();
+const Remote = {
+  list: async () => (await (await api('/api/cards')).json()).cards.map(r => ({...r.meta, id: r.id, owner: userKey(), created: r.created, updated: r.updated, remote: true})),
+  put: async (c, changed) => {
+    const fd = new FormData(); fd.append('meta', JSON.stringify(metaOf(c)));
+    for (const k of changed || []) if (c[k] instanceof Blob) fd.append(k, c[k], k);
+    await api('/api/cards/' + encodeURIComponent(c.id), {method: 'PUT', body: fd}); c.remote = true;
+  },
+  del: id => api('/api/cards/' + encodeURIComponent(id), {method: 'DELETE'}),
+  ensure: async (c, kinds) => {
+    if (!c.remote) return;
+    await Promise.all(kinds.filter(k => !(c[k] instanceof Blob)).map(async k => {
+      try { c[k] = await (await api(`/api/cards/${encodeURIComponent(c.id)}/${k}`)).blob(); } catch (e) { if (e.message === 'auth') throw e; }
+    }));
+  }
+};
+const DB = API ? Remote : Local;
 
 /* ================= Card rendering ================= */
 let user = store('holo.user'), cards = [], current = null, draft = null;
@@ -567,9 +639,18 @@ function renderText(c) {
 }
 function applyLook(c) { applyTheme(c.color); applyPattern(c.pattern || 'stars'); renderText(c); }
 async function applyImages(c) {
-  if (c.demo || !c.img) { const d = demoScene(); setScene(d.img, d.depth, .5); return; }
-  const [im, dp] = await Promise.all([loadImg(objURL(c.img)), c.depth ? loadImg(objURL(c.depth)).catch(() => null) : null]);
-  setScene(im, dp, .22);
+  if (c.demo || (!c.img && !c.remote)) { const d = demoScene(); setLayers(d.img, d.bg, d.dm, .5); return; }
+  await DB.ensure(c, ['img', 'bg', 'dm']);
+  if (!c.img) { const d = demoScene(); setLayers(d.img, d.bg, d.dm, .5); return; }
+  const ld = b => b ? loadImg(objURL(b)).catch(() => null) : null;
+  const [im, bg, dm] = await Promise.all([ld(c.img), ld(c.bg), ld(c.dm)]);
+  if (!im) return;
+  let dmC = dm;
+  if (!dmC) {  // cards made before the layered pipeline: whole image is the "person"
+    const dep = await ld(c.depth), all = mk(8, 8), ax = all.getContext('2d'); ax.fillStyle = '#fff'; ax.fillRect(0, 0, 8, 8);
+    dmC = packDM(dep || guessRelief(64, 80), all, im.naturalWidth, im.naturalHeight);
+  }
+  setLayers(im, bg || im, dmC, .22);
 }
 function playEnter() {
   for (const el of [card, $('halo')]) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
@@ -581,16 +662,37 @@ async function showCard(c, animate = true) {
   if (animate) playEnter();
 }
 
-/* ================= Login ================= */
-async function enter(name) {
-  user = name.trim(); store('holo.user', user);
+/* ================= Login (name + 4-digit PIN) ================= */
+async function enter(name, pin) {
+  $('loginErr').textContent = '';
+  if (API && !token) {
+    try {
+      const r = await fetch(API + '/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, pin})});
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) { $('loginErr').textContent = j.error || 'Could not sign in.'; return; }
+      token = j.token; store('holo.token', token); name = j.name;
+    } catch { $('loginErr').textContent = 'Cannot reach the deck server. Check your connection.'; return; }
+  }
+  if (API) { try { aiReady = !!(await (await fetch(API + '/api/status')).json()).ai; } catch { aiReady = false; } }
+  user = name; store('holo.user', user);
   $('login').hidden = true; $('fab').hidden = false;
-  cards = (await DB.list(userKey())).sort((a, b) => a.created - b.created);
+  try { cards = (await DB.list(userKey())).sort((a, b) => a.created - b.created); }
+  catch (e) { if (e.message === 'auth') return; cards = []; }
   const lastId = store('holo.last.' + userKey());
   await showCard(cards.find(c => c.id === lastId) || cards[0] || DEMO);
 }
-$('loginForm').addEventListener('submit', e => { e.preventDefault(); const n = $('loginName').value.trim(); if (n) enter(n); });
-function showLogin() { closeSheets(); $('deck').hidden = true; $('fab').hidden = true; $('loginName').value = ''; $('login').hidden = false; setTimeout(() => $('loginName').focus(), 50); }
+$('loginForm').addEventListener('submit', e => {
+  e.preventDefault(); const n = $('loginName').value.trim(), pin = $('loginPin').value.trim();
+  if (!n) return; if (API && !/^\d{4}$/.test(pin)) { $('loginErr').textContent = 'The PIN must be 4 digits.'; return; }
+  enter(n, pin);
+});
+function showLogin(msg) {
+  if (API && token) { fetch(API + '/api/logout', {method: 'POST', headers: {Authorization: 'Bearer ' + token}}).catch(() => {}); }
+  token = null; store('holo.token', null); cards = []; current = null;
+  closeSheets(); $('deck').hidden = true; $('editor').hidden = true; $('fab').hidden = true;
+  $('loginName').value = ''; $('loginPin').value = ''; $('loginErr').textContent = msg || ''; $('login').hidden = false;
+  setTimeout(() => $('loginName').focus(), 50);
+}
 
 /* ================= Deck view ================= */
 function openDeck() {
@@ -601,7 +703,9 @@ function openDeck() {
   for (const c of cards) {
     const b = document.createElement('button'); b.className = 'mini' + (current && c.id === current.id ? ' on' : ''); b.type = 'button';
     const col = themeColors(c.color); b.style.setProperty('--m1', col[1]); b.style.setProperty('--m2', col[2]); b.style.setProperty('--m3', col[3]);
-    const inner = document.createElement('div'); inner.className = 'in'; if (c.thumb) inner.style.backgroundImage = `url("${objURL(c.thumb)}")`;
+    const inner = document.createElement('div'); inner.className = 'in';
+    const setThumb = () => { if (c.thumb instanceof Blob) inner.style.backgroundImage = `url("${objURL(c.thumb)}")`; };
+    if (c.thumb instanceof Blob) setThumb(); else DB.ensure(c, ['thumb']).then(setThumb).catch(() => {});
     const s = document.createElement('span'); s.textContent = c.title || 'Untitled';
     b.append(inner, s); b.setAttribute('aria-label', 'Open card ' + (c.title || 'Untitled'));
     b.addEventListener('click', () => { $('deck').hidden = true; showCard(c); });
@@ -632,61 +736,78 @@ document.addEventListener('click', e => {
 });
 stage.addEventListener('click', () => { $('menu').hidden = true; });
 
-/* ================= Photo processing: AI style (optional) + depth ================= */
-let depthPipe = null;
+/* ================= Photo processing: AI style (optional) → person cut-out → relief → background plate ================= */
+let tPromise = null, depthPipe = null, segPipe = null;
+const TF = () => tPromise || (tPromise = import(TJS).catch(e => { tPromise = null; throw e; }));
+const prog = label => p => { if (p.status === 'progress' && p.progress) busy(`${label}… ${Math.round(p.progress)}%`); };
+const dev = () => navigator.gpu ? 'webgpu' : 'wasm';
 async function aiDepth(src) {
   if (!depthPipe) depthPipe = (async () => {
-    const T = await import(TJS);
-    const opts = {progress_callback: p => { if (p.status === 'progress' && p.progress) busy(`Downloading depth model… ${Math.round(p.progress)}%`); }};
-    let est; try { est = await T.pipeline('depth-estimation', DEPTH_MODEL, {...opts, device: navigator.gpu ? 'webgpu' : 'wasm'}); }
-    catch { est = await T.pipeline('depth-estimation', DEPTH_MODEL, {...opts, device: 'wasm'}); }
-    return {T, est};
+    const T = await TF(), o = {progress_callback: prog('Downloading depth model')};
+    try { return await T.pipeline('depth-estimation', DEPTH_MODEL, {...o, device: dev()}); } catch { return await T.pipeline('depth-estimation', DEPTH_MODEL, {...o, device: 'wasm'}); }
   })().catch(e => { depthPipe = null; throw e; });
-  const {T, est} = await depthPipe;
-  busy('Estimating depth…');
-  const out = await est(T.RawImage.fromCanvas(fit(src, 640)));
-  return out.depth.toCanvas();
+  const est = await depthPipe, T = await TF(); busy('Measuring depth…');
+  return (await est(T.RawImage.fromCanvas(fit(src, 640)))).depth.toCanvas();
+}
+async function segment(src) {
+  if (!segPipe) segPipe = (async () => {
+    const T = await TF(), o = {progress_callback: prog('Downloading cut-out model')};
+    let model; try { model = await T.AutoModel.from_pretrained(SEG_MODEL, {...o, device: dev(), dtype: 'fp32'}); } catch { model = await T.AutoModel.from_pretrained(SEG_MODEL, {...o, device: 'wasm'}); }
+    return {model, processor: await T.AutoProcessor.from_pretrained(SEG_MODEL)};
+  })().catch(e => { segPipe = null; throw e; });
+  const {model, processor} = await segPipe, T = await TF(); busy('Cutting out the person…');
+  const small = fit(src, 1024), {pixel_values} = await processor(T.RawImage.fromCanvas(small));
+  const {output} = await model({input: pixel_values});
+  const m = await T.RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(small.width, small.height);
+  const c = mk(small.width, small.height), x = c.getContext('2d'), id = x.createImageData(c.width, c.height), ch = m.channels || 1;
+  for (let i = 0, j = 0; i < id.data.length; i += 4, j += ch) { const v = m.data[j]; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
+  x.putImageData(id, 0, 0); return c;
 }
 const blobToB64 = b => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = ko; r.readAsDataURL(b); });
-async function stylize(blob, style) {
-  busy('Stylising with AI…');
-  const res = await fetch(AI_ENDPOINT, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({style, mime: blob.type || 'image/jpeg', data: await blobToB64(blob)})});
-  const j = await res.json().catch(() => ({}));
-  if (!res.ok || !j.data) throw new Error(j.error || 'Style service error');
+async function aiBlob(path, blob, extra = {}) {
+  const r = await api(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({...extra, mime: blob.type || 'image/jpeg', data: await blobToB64(blob)})});
+  const j = await r.json(); if (!j.data) throw new Error(j.error || 'No image');
   const bin = atob(j.data), arr = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
   return new Blob([arr], {type: j.mime || 'image/png'});
 }
+async function jpeg(src, max, q = .88) { const c = fit(src, max); let b; do { b = await toBlob(c, 'image/jpeg', q); q -= .08; } while (b.size > 1.7e6 && q > .4); return b; }
 function busy(t) { const b = $('busy'); if (t) { b.textContent = t; b.hidden = false; } else b.hidden = true; }
 let jobId = 0;
 async function processInto(d, style) {
   const my = ++jobId; d.processing = true; updateSave();
+  const stale = () => my !== jobId;
   try {
     let imgBlob = d.src;
     if (style !== 'original') {
-      try { imgBlob = await stylize(d.src, style); }
-      catch (e) { console.warn(e); say('Style service unavailable: kept the original photo.'); style = 'original'; d.style = 'original'; renderStyles(); }
+      try { busy('Stylising with AI…'); imgBlob = await aiBlob('/api/stylize', d.src, {style}); }
+      catch (e) { if (e.message === 'auth') return; console.warn(e); say('Style service unavailable: kept the original photo.'); d.style = 'original'; renderStyles(); }
     }
-    const im = await loadImg(objURL(imgBlob));
-    if (my !== jobId) return;
-    setScene(im, null, .22);
-    let dc;
-    try { dc = await aiDepth(im); } catch (e) { console.warn(e); dc = guessDepth(im.naturalWidth >> 2, im.naturalHeight >> 2); say('AI depth unavailable here: using an approximate depth.'); }
-    if (my !== jobId) return;
-    d.img = imgBlob; d.depth = await toBlob(dc, 'image/png'); d.thumb = await toBlob(fit(im, 420), 'image/jpeg', .82);
-    setScene(im, dc, .22);
-    if (!$('eStatus').textContent) say('Ready. Tilt to check the depth, then save.');
-  } finally { if (my === jobId) { d.processing = false; busy(); updateSave(); } }
+    const imC = fit(await loadImg(objURL(imgBlob)), 1600); if (stale()) return;
+    setLayers(imC, imC, packDM(guessRelief(64, 80), guessMask(64, 80), imC.width, imC.height), .22);
+    const notes = [];
+    let mask; try { mask = await segment(imC); } catch (e) { console.warn(e); mask = guessMask(256, Math.round(256 * imC.height / imC.width)); notes.push('approximate cut-out'); }
+    if (stale()) return;
+    let depth; try { depth = await aiDepth(imC); } catch (e) { console.warn(e); depth = guessRelief(128, Math.round(128 * imC.height / imC.width)); notes.push('approximate depth'); }
+    if (stale()) return;
+    const dm = packDM(depth, mask, imC.width, imC.height);
+    let bg = null;
+    if (aiReady) { try { busy('Rebuilding the background with AI…'); bg = fit(await loadImg(objURL(await aiBlob('/api/plate', await jpeg(imC, 1280)))), 1280); } catch (e) { if (e.message === 'auth') return; console.warn(e); } }
+    if (!bg) { busy('Rebuilding the background…'); bg = fillBehind(fit(imC, 1280), mask); }
+    if (stale()) return;
+    d.img = await jpeg(imC, 1600, .9); d.bg = await jpeg(bg, 1280, .85); d.dm = await toBlob(dm, 'image/png'); d.thumb = await jpeg(imC, 420, .82);
+    d.changed = new Set(['src', 'img', 'bg', 'dm', 'thumb']);
+    setLayers(imC, bg, dm, .22);
+    say(notes.length ? `Ready (${notes.join(', ')}: the AI models couldn't load here).` : 'Ready. Tilt to check the 3D, then save.');
+  } finally { if (!stale()) { d.processing = false; busy(); updateSave(); } }
 }
 async function takePhoto(file) {
-  if (!file) return;
-  if (!user) return;
-  const editing = !$('editor').hidden && draft;
-  if (!editing) openEditor({id: uid(), owner: userKey(), created: Date.now(), title: '', desc: '', attacks: [], color: current && !current.demo ? current.color : 'violet', pattern: 'stars', style: 'original'}, true);
+  if (!file || !user) return;
+  if ($('editor').hidden || !draft) openEditor({id: uid(), owner: userKey(), created: Date.now(), title: '', desc: '', attacks: [], color: current && !current.demo ? current.color : 'violet', pattern: 'stars', style: 'original'}, true);
   const d = draft;
   busy('Preparing photo…');
   const im = await loadImg(objURL(file)).catch(() => null);
   if (!im) { busy(); say('Could not read that image.'); return; }
-  d.src = await toBlob(fit(im, 1600), 'image/jpeg', .9);
+  d.src = await jpeg(im, 1600, .9);
   await processInto(d, d.style);
 }
 $('cam').addEventListener('change', e => { takePhoto(e.target.files[0]); e.target.value = ''; });
@@ -699,11 +820,11 @@ function renderStyles() {
   const box = $('styles'); box.replaceChildren();
   for (const [k, label] of STYLES) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = label;
-    b.setAttribute('aria-pressed', String(draft.style === k)); b.disabled = k !== 'original' && !AI_ENDPOINT;
-    b.addEventListener('click', () => { if (draft.style === k) return; draft.style = k; renderStyles(); if (draft.src) { say(''); processInto(draft, k); } });
+    b.setAttribute('aria-pressed', String(draft.style === k)); b.disabled = k !== 'original' && !aiReady;
+    b.addEventListener('click', () => { if (draft.style === k) return; draft.style = k; renderStyles(); if (draft.src || draft.img) { say(''); restyle(draft, k); } });
     box.append(b);
   }
-  $('styleHint').textContent = AI_ENDPOINT ? 'AI styles are made with Gemini; depth is estimated on your phone.' : 'AI styles need the Gemini service, which is not connected yet.';
+  $('styleHint').textContent = aiReady ? 'Styles and background are made with Gemini; the cut-out and depth run on your phone.' : (API ? 'AI styles need the Gemini key on the server — not set yet.' : 'AI styles need the deck server.');
 }
 function renderSwatches() {
   const box = $('swatches'); box.replaceChildren();
@@ -747,6 +868,11 @@ function renderAttacks() {
   });
   $('addAtk').hidden = draft.attacks.length >= 3;
 }
+async function restyle(d, k) {
+  if (!d.src) { busy('Loading original…'); await DB.ensure(d, ['src']); }
+  if (!d.src) { busy(); say('The original photo is missing; take or upload it again.'); return; }
+  processInto(d, k);
+}
 function openEditor(c, isNew) {
   $('menu').hidden = true;
   draft = {...c, attacks: (c.attacks || []).map(a => ({...a})), isNew};
@@ -766,21 +892,24 @@ $('eCancel').addEventListener('click', () => { closeEditor(); if (current) showC
 $('editor').addEventListener('submit', async e => {
   e.preventDefault(); if (!draft || draft.processing) return;
   if (!draft.img) { say('Add a photo first.'); return; }
-  const {isNew, processing, ...saved} = draft;
-  saved.title = saved.title.trim() || 'Untitled'; saved.updated = Date.now();
-  await DB.put(saved);
+  const {isNew, processing, changed, ...saved} = draft;
+  saved.title = (saved.title || '').trim() || 'Untitled'; saved.updated = Date.now();
+  $('eSave').disabled = true; say('Saving…');
+  try { await DB.put(saved, isNew ? new Set(['src', 'img', 'bg', 'dm', 'thumb']) : changed); }
+  catch (err) { if (err.message !== 'auth') { say('Could not save: ' + err.message); updateSave(); } return; }
   const i = cards.findIndex(c => c.id === saved.id); if (i >= 0) cards[i] = saved; else cards.push(saved);
   closeEditor(); await showCard(saved, isNew);
 });
 let delArmed = false;
 $('eDel').addEventListener('click', async () => {
   if (!delArmed) { delArmed = true; $('eDel').textContent = 'Tap again to delete permanently'; return; }
-  const id = draft.id; await DB.del(id); cards = cards.filter(c => c.id !== id);
+  const id = draft.id; try { await DB.del(id); } catch (err) { say('Could not delete: ' + err.message); return; } cards = cards.filter(c => c.id !== id);
   closeEditor(); await showCard(cards[0] || DEMO);
 });
 
 /* ================= Start ================= */
-if (user) enter(user); else { applyLook(DEMO); applyImages(DEMO); showLogin(); }
+applyLook(DEMO); applyImages(DEMO);
+if (user && (!API || token)) enter(user); else showLogin();
 }
 </script>
 </body>
