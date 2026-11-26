@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#08090f">
-<title>Holo deck</title>
+<title>HoloDeck</title>
+<meta name="description" content="La tua collezione di carte olografiche">
+<meta property="og:title" content="HoloDeck">
+<meta property="og:description" content="La tua collezione di carte olografiche">
+<meta name="apple-mobile-web-app-title" content="HoloDeck">
+<meta name="application-name" content="HoloDeck">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
@@ -45,13 +50,13 @@ button{font:inherit;color:inherit}
 .face{position:absolute;inset:4cqw;border-radius:4.4cqw;overflow:hidden;isolation:isolate;
  background:linear-gradient(180deg,color-mix(in srgb,var(--c0) 55%,#1d2239) 0%,color-mix(in srgb,var(--c0) 40%,#13162a) 42%,#0c0d17 100%);
  box-shadow:0 0 0 .5cqw rgba(10,8,25,.55),0 0 2.2cqw rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18)}
-.art{position:absolute;inset:auto 0 0 0;height:72%;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 16%);mask-image:linear-gradient(180deg,transparent 0%,#000 16%)}
+.art{position:absolute;inset:0 0 auto 0;height:82%;-webkit-mask-image:linear-gradient(180deg,#000 58%,transparent 100%);mask-image:linear-gradient(180deg,#000 58%,transparent 100%)}
 .art canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.aurora{position:absolute;left:-25%;right:-25%;bottom:-14%;height:58%;pointer-events:none;mix-blend-mode:screen;filter:blur(7cqw);
- background:radial-gradient(38% 52% at 30% 68%,color-mix(in srgb,var(--c2) 78%,transparent),transparent 72%),radial-gradient(42% 50% at 72% 74%,color-mix(in srgb,var(--c1) 85%,transparent),transparent 72%),radial-gradient(58% 36% at 50% 104%,color-mix(in srgb,var(--c3) 70%,#fff),transparent 72%);
+.aurora{position:absolute;left:-25%;right:-25%;top:8%;height:66%;pointer-events:none;mix-blend-mode:screen;filter:blur(8cqw);opacity:.8;
+ background:radial-gradient(34% 42% at 34% 58%,color-mix(in srgb,var(--c2) 70%,transparent),transparent 72%),radial-gradient(38% 44% at 68% 52%,color-mix(in srgb,var(--c1) 80%,transparent),transparent 72%),radial-gradient(40% 30% at 50% 78%,color-mix(in srgb,var(--c3) 45%,transparent),transparent 72%);
  transform:translate(calc(var(--tx) * -7cqw),calc(var(--ty) * -3cqw))}
 /* reverse-holo foil: printed on the glass only, fades exactly where the photo appears */
-.revwrap{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,#000 26%,transparent 58%);mask-image:linear-gradient(180deg,#000 26%,transparent 58%)}
+.revwrap{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,transparent 46%,#000 76%);mask-image:linear-gradient(180deg,transparent 46%,#000 76%)}
 .rev,.rev2{position:absolute;inset:-3cqw;mix-blend-mode:screen;-webkit-mask-image:var(--pat);mask-image:var(--pat)}
 .rev{opacity:calc(.06 + var(--hyp) * .42);
  background:linear-gradient(112deg,transparent 22%,rgba(255,255,255,.8) 40%,color-mix(in srgb,var(--c3) 80%,#fff) 47%,color-mix(in srgb,var(--c2) 85%,#fff) 53%,rgba(140,215,255,.8) 59%,transparent 76%);
@@ -61,16 +66,16 @@ button{font:inherit;color:inherit}
 .rev2{opacity:calc(var(--hyp) * .35);-webkit-mask-image:var(--grain);mask-image:var(--grain);
  background:linear-gradient(112deg,transparent 30%,#fff 50%,transparent 70%);background-size:300% 300%;background-position:calc(100% - var(--bx)) var(--by);
  -webkit-mask-size:16cqw 16cqw;mask-size:16cqw 16cqw;-webkit-mask-position:calc(var(--tx) * 3cqw) calc(var(--ty) * 3cqw);mask-position:calc(var(--tx) * 3cqw) calc(var(--ty) * 3cqw)}
-.content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:flex-start;padding:6.5cqw 7cqw 0}
+.content{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;align-items:stretch;padding:16cqw 5.5cqw 5cqw;background:linear-gradient(180deg,transparent,rgba(8,8,18,.5) 30%,rgba(8,8,18,.8))}
 .card.enter .content{animation:rise 1s 1.4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes rise{from{opacity:0;translate:0 4cqw}}
-.badge{width:13cqw;height:13cqw;border-radius:50%;display:grid;place-items:center;
+.badge{position:absolute;z-index:3;top:5cqw;left:5cqw;width:12cqw;height:12cqw;border-radius:50%;display:grid;place-items:center;
  background:radial-gradient(circle at 32% 25%,color-mix(in srgb,var(--c1) 45%,#3b4469),#1a1e34 72%);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 0 0 1px rgba(255,255,255,.08),0 1.2cqw 3cqw rgba(0,0,0,.5)}
 .badge svg{width:6cqw;height:6cqw}
-.title{margin:7cqw 0 0;max-width:100%;font:400 13cqw/.94 'Bebas Neue',Impact,'Arial Narrow',sans-serif;color:#f5f6fb;text-shadow:0 .5cqw 2cqw rgba(0,0,0,.55);overflow-wrap:anywhere}
-.text{margin:2.6cqw 0 0;max-width:94%;font:300 4.3cqw/1.4 Outfit,system-ui,sans-serif;color:rgba(222,226,240,.76);
+.title{margin:0 1cqw;max-width:100%;font:400 12cqw/.94 'Bebas Neue',Impact,'Arial Narrow',sans-serif;color:#f5f6fb;text-shadow:0 .5cqw 2cqw rgba(0,0,0,.55);overflow-wrap:anywhere}
+.text{margin:1.6cqw 1cqw 0;max-width:96%;font:300 4.3cqw/1.4 Outfit,system-ui,sans-serif;color:rgba(222,226,240,.76);
  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.attacks{position:absolute;left:4.5cqw;right:4.5cqw;bottom:4.5cqw;z-index:3;display:grid;gap:1.8cqw}
+.attacks{display:grid;gap:1.6cqw;margin-top:3cqw}.attacks:empty{display:none}
 .atk{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:2.4cqw;padding:2.2cqw 3cqw;border-radius:3cqw;
  background:rgba(8,8,20,.48);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .atk i{width:5.4cqw;height:5.4cqw;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--c3),var(--c2) 45%,var(--c1));box-shadow:0 0 2cqw color-mix(in srgb,var(--c2) 60%,transparent)}
@@ -88,8 +93,9 @@ button{font:inherit;color:inherit}
 .sweep{z-index:8;mix-blend-mode:overlay;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.95) 50%,transparent 65%) no-repeat;background-size:250% 100%;background-position:150% 0}
 .card.enter .sweep{animation:sweep 1.1s 1.9s ease-in-out both}
 @keyframes sweep{from{background-position:150% 0}to{background-position:-60% 0}}
-.busy{position:absolute;inset:0;z-index:7;display:grid;place-content:center;justify-items:center;gap:3cqw;background:rgba(6,6,14,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);font:400 4.4cqw/1.3 Outfit,system-ui,sans-serif;text-align:center;padding:8cqw}
-.busy::before{content:"";width:10cqw;height:10cqw;border-radius:50%;border:.8cqw solid rgba(255,255,255,.15);border-top-color:var(--c3);animation:spin 1s linear infinite}
+.busy{position:absolute;z-index:7;top:5cqw;left:20cqw;right:5cqw;display:flex;align-items:center;gap:2.4cqw;padding:2.2cqw 3.4cqw;border-radius:99px;background:rgba(6,6,14,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font:400 3.5cqw/1.25 Outfit,system-ui,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.busy::before{content:"";flex:none;width:4.6cqw;height:4.6cqw;border-radius:50%;border:.6cqw solid rgba(255,255,255,.15);border-top-color:var(--c3);animation:spin 1s linear infinite}
+.busy.idle::before{animation:none;border-color:var(--c3)}
 @keyframes spin{to{rotate:360deg}}
 /* ---------- chrome around the card ---------- */
 .pill,.fab{position:fixed;z-index:10;border:1px solid rgba(255,255,255,.14);background:rgba(20,22,38,.7);
@@ -122,7 +128,7 @@ button{font:inherit;color:inherit}
 .menu{display:grid;gap:8px}
 .menu button{display:flex;align-items:center;gap:12px;min-height:52px;padding:0 16px;border-radius:14px;border:1px solid #2c3050;background:#181b2e;cursor:pointer;text-align:left;font-size:16px}
 .menu button svg{width:20px;height:20px;flex:none}
-.lbl{margin:16px 0 8px;color:#aeb3c8;font-size:13px}
+.lbl{margin:16px 0 8px;color:#aeb3c8;font-size:13px}.step{color:#f1ecff;font-size:15px;font-weight:600}.req{color:var(--c3);font-weight:400}
 .sheet label{display:block;margin:12px 0 5px;color:#aeb3c8;font-size:13px}
 .sheet input:not([type=color]),.sheet textarea{width:100%;font:16px Outfit,system-ui,sans-serif;color:#fff;background:#0b0c16;border:1px solid #2d3150;border-radius:12px;padding:10px 12px}
 .sheet textarea{resize:vertical;min-height:64px}
@@ -170,15 +176,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
   <canvas class="heat" id="heat"></canvas>
   <div class="foil"></div><div class="spark"></div>
   <div class="face">
-   <div class="art" id="art"><canvas id="gl"></canvas></div>
    <div class="aurora"></div>
+   <div class="art" id="art"><canvas id="gl"></canvas></div>
    <div class="revwrap"><div class="rev"></div><div class="rev2"></div></div>
+   <div class="badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z" fill="#eef0ff"/></svg></div>
    <div class="content">
-    <div class="badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z" fill="#eef0ff"/></svg></div>
     <h1 class="title" id="title"></h1>
     <p class="text" id="desc"></p>
+    <div class="attacks" id="attacks"></div>
    </div>
-   <div class="attacks" id="attacks"></div>
    <div class="shine"></div><div class="glitter"></div>
    <div class="busy" id="busy" hidden></div>
   </div>
@@ -186,66 +192,67 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  </div>
 </div>
 
-<button class="pill" id="motion" hidden>Tap to enable motion</button>
-<button class="fab" id="fab" hidden aria-label="Card menu">
+<button class="pill" id="motion" hidden>Tocca per attivare il movimento</button>
+<button class="fab" id="fab" hidden aria-label="Menu carta">
  <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z" fill="#e6dcff"/></svg>
 </button>
 <input type="file" id="cam" accept="image/*" capture="environment" hidden>
 <input type="file" id="pick" accept="image/*" hidden>
 
-<section class="sheet" id="menu" hidden aria-label="Card menu">
+<section class="sheet" id="menu" hidden aria-label="Menu carta">
  <div class="grab"></div>
  <div class="menu">
-  <button data-act="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>New card · take a photo</button>
-  <button data-act="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>New card · upload a photo</button>
-  <button data-act="edit" id="mEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Edit this card</button>
-  <button data-act="deck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="8" height="11" rx="2"/><rect x="13" y="8" width="8" height="11" rx="2"/></svg>Open deck <span class="hint" style="margin:0 0 0 auto">or shake twice</span></button>
-  <button data-act="user" id="mUser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span id="mUserLbl">Switch user</span></button>
+  <button data-act="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Nuova carta · scatta una foto</button>
+  <button data-act="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 16l5-5 4 4 3-3 4 4"/></svg>Nuova carta · carica una foto</button>
+  <button data-act="edit" id="mEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Modifica questa carta</button>
+  <button data-act="deck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="8" height="11" rx="2"/><rect x="13" y="8" width="8" height="11" rx="2"/></svg>Apri il mazzo <span class="hint" style="margin:0 0 0 auto">o scuoti due volte</span></button>
+  <button data-act="user" id="mUser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span id="mUserLbl">Cambia utente</span></button>
  </div>
 </section>
 
-<form class="sheet" id="editor" hidden aria-label="Card editor">
+<form class="sheet" id="editor" hidden aria-label="Editor carta">
  <div class="grab"></div>
- <h3 id="eHead">Edit card</h3>
+ <h3 id="eHead">Modifica carta</h3>
  <div class="row" style="margin-top:4px">
-  <button class="btn" type="button" data-act="cam">Take photo</button>
-  <button class="btn" type="button" data-act="pick">Upload photo</button>
+  <button class="btn" type="button" data-act="cam">Scatta foto</button>
+  <button class="btn" type="button" data-act="pick">Carica foto</button>
  </div>
- <div class="lbl">Style</div>
+ <div class="lbl step">1 · Scegli uno stile <span class="req" id="styleReq">· serve per iniziare</span></div>
  <div class="chips" id="styles"></div>
  <p class="hint" id="styleHint"></p>
- <div class="lbl">Colour</div>
+ <div class="lbl step">2 · Compila la carta mentre viene creata</div>
+ <div class="lbl">Colore</div>
  <div class="sws" id="swatches"></div>
- <div class="lbl">Foil pattern</div>
+ <div class="lbl">Motivo foil</div>
  <div class="chips" id="patterns"></div>
- <label for="eTitle">Name</label><input id="eTitle" maxlength="24" autocomplete="off">
- <label for="eDesc">Description</label><textarea id="eDesc" maxlength="140"></textarea>
- <div class="lbl">Special attacks</div>
+ <label for="eTitle">Nome</label><input id="eTitle" maxlength="24" autocomplete="off">
+ <label for="eDesc">Descrizione</label><textarea id="eDesc" maxlength="140"></textarea>
+ <div class="lbl">Attacchi speciali</div>
  <div id="atkList"></div>
- <button class="btn" type="button" id="addAtk" style="margin-top:8px;width:100%">+ Add attack</button>
+ <button class="btn" type="button" id="addAtk" style="margin-top:8px;width:100%">+ Aggiungi attacco</button>
  <p class="status" id="eStatus" role="status"></p>
  <div class="row">
-  <button class="btn" type="button" id="eCancel">Cancel</button>
-  <button class="btn lit" type="submit" id="eSave">Save card</button>
+  <button class="btn" type="button" id="eCancel">Annulla</button>
+  <button class="btn lit" type="submit" id="eSave">Salva carta</button>
  </div>
- <div id="delZone" class="row"><button class="btn danger" type="button" id="eDel">Delete this card</button></div>
+ <div id="delZone" class="row"><button class="btn danger" type="button" id="eDel">Elimina questa carta</button></div>
 </form>
 
-<section class="overlay" id="deck" hidden aria-label="Deck">
- <div class="head"><h2 id="deckTitle">Deck</h2><button class="x" id="deckClose" aria-label="Close deck"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
- <p class="empty" id="deckEmpty" hidden>No cards yet. Make your first one with a photo.</p>
+<section class="overlay" id="deck" hidden aria-label="Mazzo">
+ <div class="head"><h2 id="deckTitle">Mazzo</h2><button class="x" id="deckClose" aria-label="Chiudi il mazzo"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+ <p class="empty" id="deckEmpty" hidden>Ancora nessuna carta. Crea la prima con una foto.</p>
  <div class="grid" id="grid"></div>
 </section>
 
-<section class="overlay" id="login" hidden aria-label="Open your deck">
+<section class="overlay" id="login" hidden aria-label="Apri il tuo mazzo">
  <form id="loginForm">
   <div class="ghost"><div></div></div>
-  <h1>Holo deck</h1>
-  <p>Whose deck is this? Enter your name and PIN.<br>New name? Pick a PIN and your deck is created.</p>
-  <input id="loginName" maxlength="24" autocomplete="username" placeholder="Name, e.g. Lorenzo" required aria-label="Name">
-  <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" placeholder="4-digit PIN" aria-label="4-digit PIN" style="letter-spacing:.5em">
+  <h1>HoloDeck</h1>
+  <p>Di chi è questo mazzo? Inserisci nome e PIN.<br>Nome nuovo? Scegli un PIN e il mazzo viene creato.</p>
+  <input id="loginName" maxlength="24" autocomplete="username" placeholder="Nome, es. Lorenzo" required aria-label="Nome">
+  <input id="loginPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" placeholder="PIN di 4 cifre" aria-label="PIN di 4 cifre" style="letter-spacing:.5em">
   <p class="err" id="loginErr" role="alert"></p>
-  <button class="btn lit" type="submit" style="width:100%">Open my deck</button>
+  <button class="btn lit" type="submit" style="width:100%">Apri il mio mazzo</button>
  </form>
 </section>
 
@@ -268,8 +275,9 @@ const THEMES = {
   rose: ['#1d0613', '#c42a6b', '#ff7ab6', '#ffe0f0'],
   silver: ['#0d0f15', '#5c6680', '#b9c6e0', '#ffffff']
 };
-const STYLES = [['original', 'Original'], ['painted', 'Painted'], ['anime', 'Anime'], ['comic', 'Comic'], ['neon', 'Neon'], ['clay', 'Clay']];
-const PATTERNS = [['stars', 'Stars'], ['diamonds', 'Diamond'], ['hex', 'Hex'], ['scales', 'Scales'], ['waves', 'Waves'], ['lines', 'Lines'], ['confetti', 'Confetti'], ['none', 'None']];
+const STYLES = [['realistic', 'Realistico'], ['ghibli', 'Stile Ghibli'], ['wizard', 'Magico'], ['tech', 'Digital tech']];
+const PHOTO_POS = .12;
+const PATTERNS = [['stars', 'Stelle'], ['diamonds', 'Rombi'], ['hex', 'Esagoni'], ['scales', 'Squame'], ['waves', 'Onde'], ['lines', 'Linee'], ['confetti', 'Coriandoli'], ['none', 'Nessuno']];
 
 const $ = id => document.getElementById(id);
 const card = $('card'), art = $('art'), cv = $('gl'), stage = $('stage');
@@ -594,7 +602,7 @@ requestAnimationFrame(frame);
 let token = store('holo.token'), aiReady = false;
 async function api(path, opts = {}) {
   const r = await fetch(API + path, {...opts, headers: {...(opts.headers || {}), Authorization: 'Bearer ' + token}});
-  if (r.status === 401) { token = null; store('holo.token', null); showLogin('Your session ended. Sign in again.'); throw new Error('auth'); }
+  if (r.status === 401) { token = null; store('holo.token', null); showLogin('Sessione scaduta. Accedi di nuovo.'); throw new Error('auth'); }
   if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || 'HTTP ' + r.status); }
   return r;
 }
@@ -631,8 +639,8 @@ const DB = API ? Remote : Local;
 /* ================= Card rendering ================= */
 let user = store('holo.user'), cards = [], current = null, draft = null;
 const userKey = () => (user || '').trim().toLowerCase();
-const DEMO = {id: 'demo', demo: true, title: 'Your first card', desc: 'Tap the ✦ button to take or upload a photo and turn it into a holo card.',
-  attacks: [{name: 'Shimmer', dmg: '30', text: 'Tilt the phone to make the foil catch the light.'}], color: 'violet', pattern: 'stars', style: 'original'};
+const DEMO = {id: 'demo', demo: true, title: 'La tua prima carta', desc: 'Tocca ✦ per scattare o caricare una foto, scegli uno stile e rendila olografica.',
+  attacks: [{name: 'Riflesso', dmg: '30', text: 'Inclina il telefono e il foil cattura la luce.'}], color: 'violet', pattern: 'stars', style: 'original'};
 const urls = [];
 const objURL = b => { const u = URL.createObjectURL(b); urls.push(u); if (urls.length > 40) URL.revokeObjectURL(urls.shift()); return u; };
 function renderText(c) {
@@ -661,7 +669,7 @@ async function applyImages(c) {
     const dep = await ld(c.depth), all = mk(8, 8), ax = all.getContext('2d'); ax.fillStyle = '#fff'; ax.fillRect(0, 0, 8, 8);
     dmC = packDM(dep || guessRelief(64, 80), all, im.naturalWidth, im.naturalHeight);
   }
-  setLayers(im, null, dmC, .22);
+  setLayers(im, null, dmC, PHOTO_POS);
 }
 function playEnter() {
   for (const el of [card, $('halo')]) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
@@ -680,9 +688,9 @@ async function enter(name, pin) {
     try {
       const r = await fetch(API + '/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, pin})});
       const j = await r.json().catch(() => ({}));
-      if (!r.ok) { $('loginErr').textContent = j.error || 'Could not sign in.'; return; }
+      if (!r.ok) { $('loginErr').textContent = j.error || 'Accesso non riuscito.'; return; }
       token = j.token; store('holo.token', token); name = j.name;
-    } catch { $('loginErr').textContent = 'Cannot reach the deck server. Check your connection.'; return; }
+    } catch { $('loginErr').textContent = 'Server del mazzo non raggiungibile. Controlla la connessione.'; return; }
   }
   if (API) { try { aiReady = !!(await (await fetch(API + '/api/status')).json()).ai; } catch { aiReady = false; } }
   user = name; store('holo.user', user);
@@ -694,7 +702,7 @@ async function enter(name, pin) {
 }
 $('loginForm').addEventListener('submit', e => {
   e.preventDefault(); const n = $('loginName').value.trim(), pin = $('loginPin').value.trim();
-  if (!n) return; if (API && !/^\d{4}$/.test(pin)) { $('loginErr').textContent = 'The PIN must be 4 digits.'; return; }
+  if (!n) return; if (API && !/^\d{4}$/.test(pin)) { $('loginErr').textContent = 'Il PIN deve avere 4 cifre.'; return; }
   enter(n, pin);
 });
 function showLogin(msg) {
@@ -708,7 +716,7 @@ function showLogin(msg) {
 /* ================= Deck view ================= */
 function openDeck() {
   closeSheets(); if (!user) return;
-  $('deckTitle').textContent = `${user}'s deck`;
+  $('deckTitle').textContent = `Il mazzo di ${user}`;
   const grid = $('grid'); grid.replaceChildren();
   $('deckEmpty').hidden = cards.length > 0;
   for (const c of cards) {
@@ -717,13 +725,13 @@ function openDeck() {
     const inner = document.createElement('div'); inner.className = 'in';
     const setThumb = () => { if (c.thumb instanceof Blob) inner.style.backgroundImage = `url("${objURL(c.thumb)}")`; };
     if (c.thumb instanceof Blob) setThumb(); else DB.ensure(c, ['thumb']).then(setThumb).catch(() => {});
-    const s = document.createElement('span'); s.textContent = c.title || 'Untitled';
-    b.append(inner, s); b.setAttribute('aria-label', 'Open card ' + (c.title || 'Untitled'));
+    const s = document.createElement('span'); s.textContent = c.title || 'Senza nome';
+    b.append(inner, s); b.setAttribute('aria-label', 'Apri la carta ' + (c.title || 'Senza nome'));
     b.addEventListener('click', () => { $('deck').hidden = true; showCard(c); });
     grid.append(b);
   }
   const add = document.createElement('button'); add.type = 'button'; add.className = 'mini add';
-  const plus = document.createElement('b'); plus.textContent = '+'; const t = document.createElement('span'); t.style.position = 'static'; t.style.font = '400 15px Outfit,sans-serif'; t.textContent = 'New card';
+  const plus = document.createElement('b'); plus.textContent = '+'; const t = document.createElement('span'); t.style.position = 'static'; t.style.font = '400 15px Outfit,sans-serif'; t.textContent = 'Nuova carta';
   add.append(plus, t); add.addEventListener('click', () => { $('deck').hidden = true; $('pick').click(); });
   grid.append(add);
   $('deck').hidden = false;
@@ -734,7 +742,7 @@ $('deckClose').addEventListener('click', () => { $('deck').hidden = true; });
 function closeSheets() { $('menu').hidden = true; }
 $('fab').addEventListener('click', () => {
   if (!$('editor').hidden) return;
-  $('mEdit').hidden = !current || current.demo; $('mUserLbl').textContent = `Switch user (now ${user})`;
+  $('mEdit').hidden = !current || current.demo; $('mUserLbl').textContent = `Cambia utente (ora: ${user})`;
   $('menu').hidden = !$('menu').hidden;
 });
 document.addEventListener('click', e => {
@@ -754,19 +762,19 @@ const prog = label => p => { if (p.status === 'progress' && p.progress) busy(`${
 const dev = () => navigator.gpu ? 'webgpu' : 'wasm';
 async function aiDepth(src) {
   if (!depthPipe) depthPipe = (async () => {
-    const T = await TF(), o = {progress_callback: prog('Downloading depth model')};
+    const T = await TF(), o = {progress_callback: prog('Scarico il modello di profondità')};
     try { return await T.pipeline('depth-estimation', DEPTH_MODEL, {...o, device: dev()}); } catch { return await T.pipeline('depth-estimation', DEPTH_MODEL, {...o, device: 'wasm'}); }
   })().catch(e => { depthPipe = null; throw e; });
-  const est = await depthPipe, T = await TF(); busy('Measuring depth…');
+  const est = await depthPipe, T = await TF(); busy('Misuro la profondità…');
   return (await est(T.RawImage.fromCanvas(fit(src, 640)))).depth.toCanvas();
 }
 async function segment(src) {
   if (!segPipe) segPipe = (async () => {
-    const T = await TF(), o = {progress_callback: prog('Downloading cut-out model')};
+    const T = await TF(), o = {progress_callback: prog('Scarico il modello di scontorno')};
     let model; try { model = await T.AutoModel.from_pretrained(SEG_MODEL, {...o, device: dev(), dtype: 'fp32'}); } catch { model = await T.AutoModel.from_pretrained(SEG_MODEL, {...o, device: 'wasm'}); }
     return {model, processor: await T.AutoProcessor.from_pretrained(SEG_MODEL)};
   })().catch(e => { segPipe = null; throw e; });
-  const {model, processor} = await segPipe, T = await TF(); busy('Cutting out the person…');
+  const {model, processor} = await segPipe, T = await TF(); busy('Scontorno la persona…');
   const small = fit(src, 1024), {pixel_values} = await processor(T.RawImage.fromCanvas(small));
   const {output} = await model({input: pixel_values});
   const m = await T.RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(small.width, small.height);
@@ -782,20 +790,19 @@ async function aiBlob(path, blob, extra = {}) {
   return new Blob([arr], {type: j.mime || 'image/png'});
 }
 async function jpeg(src, max, q = .88) { const c = fit(src, max); let b; do { b = await toBlob(c, 'image/jpeg', q); q -= .08; } while (b.size > 1.7e6 && q > .4); return b; }
-function busy(t) { const b = $('busy'); if (t) { b.textContent = t; b.hidden = false; } else b.hidden = true; }
+function busy(t, idle) { const b = $('busy'); if (t) { b.textContent = t; b.classList.toggle('idle', !!idle); b.hidden = false; } else b.hidden = true; }
 let jobId = 0;
 async function processInto(d, style) {
   const my = ++jobId; d.processing = true; updateSave();
   const stale = () => my !== jobId;
   try {
-    let imgBlob = d.src;
-    if (style !== 'original') {
-      try { busy('Stylising with AI…'); imgBlob = await aiBlob('/api/stylize', d.src, {style}); }
-      catch (e) { if (e.message === 'auth') return; console.warn(e); say('Style service unavailable: kept the original photo.'); d.style = 'original'; renderStyles(); }
-    }
+    let imgBlob = d.src; const notes = [];
+    if (aiReady) {
+      try { busy('Gemini sta rielaborando la foto…'); imgBlob = await aiBlob('/api/stylize', d.src, {style}); }
+      catch (e) { if (e.message === 'auth') return; console.warn(e); notes.push('Gemini non ha risposto, uso la foto così com’è'); }
+    } else notes.push('Gemini non ancora collegato, uso la foto così com’è');
     const imC = fit(await loadImg(objURL(imgBlob)), 1600); if (stale()) return;
-    setLayers(imC, imC, packDM(guessRelief(64, 80), guessMask(64, 80), imC.width, imC.height), .22);
-    const notes = [];
+    setLayers(imC, null, packDM(guessRelief(64, 80), guessMask(64, 80), imC.width, imC.height), PHOTO_POS);
     let mask; try { mask = await segment(imC); } catch (e) { console.warn(e); mask = guessMask(256, Math.round(256 * imC.height / imC.width)); notes.push('approximate cut-out'); }
     if (stale()) return;
     let depth; try { depth = await aiDepth(imC); } catch (e) { console.warn(e); depth = guessRelief(128, Math.round(128 * imC.height / imC.width)); notes.push('approximate depth'); }
@@ -804,35 +811,43 @@ async function processInto(d, style) {
     if (stale()) return;
     d.img = await jpeg(imC, 1600, .9); d.dm = await toBlob(dm, 'image/png'); d.thumb = await jpeg(cutout(imC, mask, 420), 420, .85); d.bg = null;
     d.changed = new Set(['src', 'img', 'dm', 'thumb']);
-    setLayers(imC, null, dm, .22);
-    say(notes.length ? `Ready (${notes.join(', ')}: the AI models couldn't load here).` : 'Ready. Tilt to check the 3D, then save.');
+    setLayers(imC, null, dm, PHOTO_POS);
+    say(notes.length ? `Pronta (${notes.join('; ')}).` : 'Pronta. Inclina per vedere il 3D, poi salva.');
+    if (d.saveWhenDone) { d.processing = false; setTimeout(() => $('editor').requestSubmit(), 0); }
   } finally { if (!stale()) { d.processing = false; busy(); updateSave(); } }
 }
 async function takePhoto(file) {
   if (!file || !user) return;
-  if ($('editor').hidden || !draft) openEditor({id: uid(), owner: userKey(), created: Date.now(), title: '', desc: '', attacks: [], color: current && !current.demo ? current.color : 'violet', pattern: 'stars', style: 'original'}, true);
+  if ($('editor').hidden || !draft) openEditor({id: uid(), owner: userKey(), created: Date.now(), title: '', desc: '', attacks: [], color: current && !current.demo ? current.color : 'violet', pattern: 'stars', style: null}, true);
   const d = draft;
-  busy('Preparing photo…');
+  busy('Preparo la foto…');
   const im = await loadImg(objURL(file)).catch(() => null);
-  if (!im) { busy(); say('Could not read that image.'); return; }
+  if (!im) { busy(); say('Impossibile leggere questa immagine.'); return; }
   d.src = await jpeg(im, 1600, .9);
-  await processInto(d, d.style);
+  const pc = fit(im, 1600); setLayers(pc, null, packDM(guessRelief(64, 80), guessMask(64, 80), pc.width, pc.height), PHOTO_POS);
+  if (d.style) await processInto(d, d.style);
+  else { busy('Scegli uno stile per iniziare', true); say('Scegli uno stile: l’elaborazione parte subito e procede mentre compili la carta.'); updateSave(); }
 }
 $('cam').addEventListener('change', e => { takePhoto(e.target.files[0]); e.target.value = ''; });
 $('pick').addEventListener('change', e => { takePhoto(e.target.files[0]); e.target.value = ''; });
 
 /* ================= Editor ================= */
 const say = t => { $('eStatus').textContent = t; };
-function updateSave() { $('eSave').disabled = !draft || !!draft.processing || (!draft.img && !draft.src); $('eSave').textContent = draft && draft.processing ? 'Processing…' : 'Save card'; }
+function updateSave() {
+  if (!draft) return;
+  $('eSave').disabled = (!draft.img && !draft.src) || !!draft.saveWhenDone;
+  $('eSave').textContent = draft.saveWhenDone ? 'Salvo appena è pronta…' : draft.processing ? 'Salva quando è pronta' : 'Salva carta';
+}
 function renderStyles() {
   const box = $('styles'); box.replaceChildren();
   for (const [k, label] of STYLES) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = label;
-    b.setAttribute('aria-pressed', String(draft.style === k)); b.disabled = k !== 'original' && !aiReady;
+    b.setAttribute('aria-pressed', String(draft.style === k));
     b.addEventListener('click', () => { if (draft.style === k) return; draft.style = k; renderStyles(); if (draft.src || draft.img) { say(''); restyle(draft, k); } });
     box.append(b);
   }
-  $('styleHint').textContent = aiReady ? 'Styles are made with Gemini; the cut-out and depth run on your phone.' : (API ? 'AI styles need the Gemini key on the server — not set yet.' : 'AI styles need the deck server.');
+  $('styleReq').hidden = !!draft.style;
+  $('styleHint').textContent = aiReady ? 'Gemini ridisegna la foto a mezzo busto in questo stile; scontorno e profondità vengono poi calcolati sul telefono.' : 'Gemini non è ancora collegato: la foto verrà usata così com’è.';
 }
 function renderSwatches() {
   const box = $('swatches'); box.replaceChildren();
@@ -843,7 +858,7 @@ function renderSwatches() {
     b.addEventListener('click', () => { draft.color = k; renderSwatches(); applyLook(draft); });
     box.append(b);
   }
-  const custom = document.createElement('label'); custom.className = 'sw custom'; custom.setAttribute('aria-label', 'Custom colour');
+  const custom = document.createElement('label'); custom.className = 'sw custom'; custom.setAttribute('aria-label', 'Colore personalizzato');
   const isCustom = !THEMES[draft.color]; custom.setAttribute('aria-pressed', String(isCustom)); if (isCustom) custom.style.background = draft.color;
   const inp = document.createElement('input'); inp.type = 'color'; inp.value = isCustom ? draft.color : '#7a5cff';
   inp.addEventListener('input', () => { draft.color = inp.value; custom.style.background = inp.value; box.querySelectorAll('.sw').forEach(s => s.setAttribute('aria-pressed', String(s === custom))); applyLook(draft); });
@@ -864,10 +879,10 @@ function renderAttacks() {
   const box = $('atkList'); box.replaceChildren();
   draft.attacks.forEach((a, i) => {
     const row = document.createElement('div'); row.className = 'atkrow';
-    const n = document.createElement('input'); n.placeholder = 'Attack name'; n.maxLength = 20; n.value = a.name || ''; n.setAttribute('aria-label', 'Attack name');
-    const d = document.createElement('input'); d.placeholder = 'Dmg'; d.maxLength = 5; d.value = a.dmg || ''; d.setAttribute('aria-label', 'Damage');
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.setAttribute('aria-label', 'Remove attack'); x.textContent = '×';
-    const t = document.createElement('textarea'); t.placeholder = 'What it does'; t.maxLength = 90; t.value = a.text || ''; t.setAttribute('aria-label', 'Attack effect');
+    const n = document.createElement('input'); n.placeholder = 'Nome attacco'; n.maxLength = 20; n.value = a.name || ''; n.setAttribute('aria-label', 'Nome attacco');
+    const d = document.createElement('input'); d.placeholder = 'Danni'; d.maxLength = 5; d.value = a.dmg || ''; d.setAttribute('aria-label', 'Danni');
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'x'; x.setAttribute('aria-label', 'Rimuovi attacco'); x.textContent = '×';
+    const t = document.createElement('textarea'); t.placeholder = 'Cosa fa'; t.maxLength = 90; t.value = a.text || ''; t.setAttribute('aria-label', 'Effetto attacco');
     n.addEventListener('input', () => { a.name = n.value; renderText(draft); });
     d.addEventListener('input', () => { a.dmg = d.value; renderText(draft); });
     t.addEventListener('input', () => { a.text = t.value; renderText(draft); });
@@ -877,18 +892,18 @@ function renderAttacks() {
   $('addAtk').hidden = draft.attacks.length >= 3;
 }
 async function restyle(d, k) {
-  if (!d.src) { busy('Loading original…'); await DB.ensure(d, ['src']); }
-  if (!d.src) { busy(); say('The original photo is missing; take or upload it again.'); return; }
+  if (!d.src) { busy('Carico l’originale…'); await DB.ensure(d, ['src']); }
+  if (!d.src) { busy(); say('Manca la foto originale: scattala o caricala di nuovo.'); return; }
   processInto(d, k);
 }
 function openEditor(c, isNew) {
   $('menu').hidden = true;
   draft = {...c, attacks: (c.attacks || []).map(a => ({...a})), isNew};
   if (c.demo) { draft = {...draft, id: uid(), demo: false, owner: userKey(), created: Date.now(), isNew: true}; }
-  $('eHead').textContent = isNew ? 'New card' : 'Edit card';
+  $('eHead').textContent = isNew ? 'Nuova carta' : 'Modifica carta';
   $('eTitle').value = draft.title || ''; $('eDesc').value = draft.desc || '';
   renderStyles(); renderSwatches(); renderPatterns(); renderAttacks(); say(''); updateSave();
-  $('delZone').hidden = isNew; $('eDel').textContent = 'Delete this card'; delArmed = false;
+  $('delZone').hidden = isNew; $('eDel').textContent = 'Elimina questa carta'; delArmed = false;
   $('editor').hidden = false; $('fab').hidden = true;
   applyLook(draft);
 }
@@ -898,20 +913,22 @@ $('addAtk').addEventListener('click', () => { if (draft.attacks.length < 3) { dr
 function closeEditor() { jobId++; busy(); draft = null; $('editor').hidden = true; $('fab').hidden = false; }
 $('eCancel').addEventListener('click', () => { closeEditor(); if (current) showCard(current, false); });
 $('editor').addEventListener('submit', async e => {
-  e.preventDefault(); if (!draft || draft.processing) return;
-  if (!draft.img) { say('Add a photo first.'); return; }
-  const {isNew, processing, changed, ...saved} = draft;
-  saved.title = (saved.title || '').trim() || 'Untitled'; saved.updated = Date.now();
-  $('eSave').disabled = true; say('Saving…');
+  e.preventDefault(); if (!draft) return;
+  if (!draft.src && !draft.img) { say('Aggiungi prima una foto.'); return; }
+  if (!draft.style) { say('Scegli prima uno stile.'); return; }
+  if (draft.processing || !draft.img) { draft.saveWhenDone = true; updateSave(); if (!draft.processing) processInto(draft, draft.style); return; }
+  const {isNew, processing, changed, saveWhenDone, ...saved} = draft;
+  saved.title = (saved.title || '').trim() || 'Senza nome'; saved.updated = Date.now();
+  $('eSave').disabled = true; say('Salvataggio…');
   try { await DB.put(saved, isNew ? new Set(['src', 'img', 'dm', 'thumb']) : changed); }
-  catch (err) { if (err.message !== 'auth') { say('Could not save: ' + err.message); updateSave(); } return; }
+  catch (err) { if (err.message !== 'auth') { say('Salvataggio non riuscito: ' + err.message); updateSave(); } return; }
   const i = cards.findIndex(c => c.id === saved.id); if (i >= 0) cards[i] = saved; else cards.push(saved);
   closeEditor(); await showCard(saved, isNew);
 });
 let delArmed = false;
 $('eDel').addEventListener('click', async () => {
-  if (!delArmed) { delArmed = true; $('eDel').textContent = 'Tap again to delete permanently'; return; }
-  const id = draft.id; try { await DB.del(id); } catch (err) { say('Could not delete: ' + err.message); return; } cards = cards.filter(c => c.id !== id);
+  if (!delArmed) { delArmed = true; $('eDel').textContent = 'Tocca di nuovo per eliminarla definitivamente'; return; }
+  const id = draft.id; try { await DB.del(id); } catch (err) { say('Eliminazione non riuscita: ' + err.message); return; } cards = cards.filter(c => c.id !== id);
   closeEditor(); await showCard(cards[0] || DEMO);
 });
 
