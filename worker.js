@@ -2,7 +2,8 @@
 // Decks protected by name + 4-digit PIN; images stored as BLOBs in D1; Gemini re-poses + stylises photos, proxied with a secret key.
 //   Bindings: DB (D1 "holo-deck").  Secret: GEMINI_API_KEY (optional; enables Gemini re-pose + styles).
 
-const ORIGINS = ['https://franzbitbit.github.io', 'http://localhost:8765'];
+const ORIGINS = ['https://holodeck.pages.dev', 'https://franzbitbit.github.io', 'http://localhost:8765'];
+const okOrigin = o => ORIGINS.includes(o) || /^https:\/\/[a-z0-9-]+\.holodeck\.pages\.dev$/.test(o);
 const MODEL = 'gemini-3.1-flash-image';
 const KINDS = ['src', 'pose', 'img', 'bg', 'dm', 'thumb'];
 const MAX_BLOB = 1900000;          // D1 row limit is ~2 MB
@@ -42,7 +43,7 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url), origin = req.headers.get('Origin') || '';
     const cors = {
-      'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0],
+      'Access-Control-Allow-Origin': okOrigin(origin) ? origin : ORIGINS[0],
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       'Access-Control-Max-Age': '86400', 'Vary': 'Origin'
