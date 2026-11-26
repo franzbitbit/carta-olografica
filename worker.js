@@ -7,13 +7,13 @@ const MODEL = 'gemini-3.1-flash-image';
 const KINDS = ['src', 'img', 'bg', 'dm', 'thumb'];
 const MAX_BLOB = 1900000;          // D1 row limit is ~2 MB
 const MAX_CARDS = 200;
-const KEEP = ' Keep the same person, face, expression, pose, framing and composition exactly; do not add text, borders or logos. Same aspect ratio.';
+const KEEP = ' Keep the same person, face, expression, pose, framing and composition exactly; do not add text, borders or logos. Same aspect ratio. Put the subject on a plain, empty, very dark background.';
 const PROMPTS = {
   painted: 'Repaint this photo as a rich digital oil painting for a premium collectible trading card: visible brush strokes, dramatic rim light, vivid colour.' + KEEP,
   anime: 'Redraw this photo as a high-quality anime illustration: clean line art, cel shading, luminous eyes, soft gradient sky.' + KEEP,
   comic: 'Redraw this photo as a bold comic-book illustration: inked outlines, halftone shading, punchy flat colours.' + KEEP,
   neon: 'Restyle this photo as a futuristic neon illustration: glowing magenta and cyan rim lights, dark background, cinematic.' + KEEP,
-  clay: 'Turn this photo into a cute 3D clay figurine render with soft studio lighting and a simple pastel background.' + KEEP,
+  clay: 'Turn this photo into a cute 3D clay figurine render with soft studio lighting.' + KEEP,
   plate: 'Remove every person from this image and fill the area where they were with a natural continuation of the background, matching lighting, perspective, texture and style. Change nothing else. Keep exactly the same framing, size and aspect ratio.'
 };
 

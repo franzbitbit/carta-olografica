@@ -45,7 +45,7 @@ button{font:inherit;color:inherit}
 .face{position:absolute;inset:4cqw;border-radius:4.4cqw;overflow:hidden;isolation:isolate;
  background:linear-gradient(180deg,color-mix(in srgb,var(--c0) 55%,#1d2239) 0%,color-mix(in srgb,var(--c0) 40%,#13162a) 42%,#0c0d17 100%);
  box-shadow:0 0 0 .5cqw rgba(10,8,25,.55),0 0 2.2cqw rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18)}
-.art{position:absolute;inset:auto 0 0 0;height:70%;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 42%);mask-image:linear-gradient(180deg,transparent 0%,#000 42%)}
+.art{position:absolute;inset:auto 0 0 0;height:72%;-webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 16%);mask-image:linear-gradient(180deg,transparent 0%,#000 16%)}
 .art canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .aurora{position:absolute;left:-25%;right:-25%;bottom:-14%;height:58%;pointer-events:none;mix-blend-mode:screen;filter:blur(7cqw);
  background:radial-gradient(38% 52% at 30% 68%,color-mix(in srgb,var(--c2) 78%,transparent),transparent 72%),radial-gradient(42% 50% at 72% 74%,color-mix(in srgb,var(--c1) 85%,transparent),transparent 72%),radial-gradient(58% 36% at 50% 104%,color-mix(in srgb,var(--c3) 70%,#fff),transparent 72%);
@@ -397,6 +397,14 @@ function maskAlpha(mask, W, H, grow) {
   const id = x.getImageData(0, 0, W, H); for (let i = 0; i < id.data.length; i += 4) { id.data[i + 3] = id.data[i] > 18 ? 255 : 0; id.data[i] = id.data[i + 1] = id.data[i + 2] = 0; }
   x.putImageData(id, 0, 0); return c;
 }
+function cutout(src, mask, max) {
+  const p = fit(src, max), W = p.width, H = p.height, a = mk(W, H), ax = a.getContext('2d', {willReadFrequently: true});
+  ax.drawImage(mask, 0, 0, W, H); const id = ax.getImageData(0, 0, W, H);
+  for (let i = 0; i < id.data.length; i += 4) { id.data[i + 3] = id.data[i]; id.data[i] = id.data[i + 1] = id.data[i + 2] = 0; }
+  ax.putImageData(id, 0, 0); const px = p.getContext('2d'); px.globalCompositeOperation = 'destination-in'; px.drawImage(a, 0, 0);
+  const out = mk(W, H), o = out.getContext('2d'), g = o.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#1a1d33'); g.addColorStop(1, '#0a0b14'); o.fillStyle = g; o.fillRect(0, 0, W, H); o.drawImage(p, 0, 0); return out;
+}
 function fillBehind(src, mask) {
   const W = src.width, H = src.height, base = mk(W, H), b = base.getContext('2d');
   b.drawImage(src, 0, 0); b.globalCompositeOperation = 'destination-out'; b.drawImage(maskAlpha(mask, W, H, Math.round(W * .015)), 0, 0);
@@ -425,8 +433,6 @@ void main(){
  vec2 b=(v-.5)/uZoom+.5, s=b;
  for(int i=0;i<8;i++){ s=mix(s, b-uTilt*uStr*(DM(s).r-.5)*uRelief, .6); }
  vec4 dm=DM(s); float a=smoothstep(.3,.7,dm.g);
- vec2 sb=(b-.5)/1.06+.5+uTilt*uStr*.9;
- vec3 bg=texture2D(uBg,M(sb)).rgb*.88;
  vec3 fg=texture2D(uImg,M(s)).rgb;
  float e=1./300.;
  float rx=DM(s+vec2(e,0.)).r-DM(s-vec2(e,0.)).r, ry=DM(s+vec2(0.,e)).r-DM(s-vec2(0.,e)).r;
@@ -437,7 +443,12 @@ void main(){
  float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),22.)*a;
  fg+=uTint*spec*.28*tl;
  float rim=smoothstep(.12,.42,dm.g)*(1.-smoothstep(.55,.92,dm.g));
- gl_FragColor=vec4(mix(bg,fg,a)+uTint*rim*(.06+.26*tl),1.);
+ fg+=uTint*rim*(.08+.3*tl);
+ vec2 so=b+uTilt*uStr*.9+vec2(0.,.015); float sh=0.;
+ for(int i=0;i<9;i++){ vec2 o=vec2(mod(float(i),3.)-1.,floor(float(i)/3.)-1.)*.02; sh+=DM(so+o).g; }
+ sh=smoothstep(.05,.85,sh/9.)*.6;
+ float oa=a+(1.-a)*sh;
+ gl_FragColor=vec4(fg*a/max(oa,.001),oa);
 }`;
 let U = null;
 try { if (gl) { U = program(gl, FS, ['uImg', 'uBg', 'uDM', 'uTilt', 'uScale', 'uOff', 'uStr', 'uZoom', 'uRelief', 'uTint']); gl.uniform1i(U.uImg, 0); gl.uniform1i(U.uBg, 1); gl.uniform1i(U.uDM, 2); } } catch (e) { console.warn(e); U = null; }
@@ -640,17 +651,17 @@ function renderText(c) {
 function applyLook(c) { applyTheme(c.color); applyPattern(c.pattern || 'stars'); renderText(c); }
 async function applyImages(c) {
   if (c.demo || (!c.img && !c.remote)) { const d = demoScene(); setLayers(d.img, d.bg, d.dm, .5); return; }
-  await DB.ensure(c, ['img', 'bg', 'dm']);
+  await DB.ensure(c, ['img', 'dm']);
   if (!c.img) { const d = demoScene(); setLayers(d.img, d.bg, d.dm, .5); return; }
   const ld = b => b ? loadImg(objURL(b)).catch(() => null) : null;
-  const [im, bg, dm] = await Promise.all([ld(c.img), ld(c.bg), ld(c.dm)]);
+  const [im, dm] = await Promise.all([ld(c.img), ld(c.dm)]);
   if (!im) return;
   let dmC = dm;
   if (!dmC) {  // cards made before the layered pipeline: whole image is the "person"
     const dep = await ld(c.depth), all = mk(8, 8), ax = all.getContext('2d'); ax.fillStyle = '#fff'; ax.fillRect(0, 0, 8, 8);
     dmC = packDM(dep || guessRelief(64, 80), all, im.naturalWidth, im.naturalHeight);
   }
-  setLayers(im, bg || im, dmC, .22);
+  setLayers(im, null, dmC, .22);
 }
 function playEnter() {
   for (const el of [card, $('halo')]) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
@@ -790,13 +801,10 @@ async function processInto(d, style) {
     let depth; try { depth = await aiDepth(imC); } catch (e) { console.warn(e); depth = guessRelief(128, Math.round(128 * imC.height / imC.width)); notes.push('approximate depth'); }
     if (stale()) return;
     const dm = packDM(depth, mask, imC.width, imC.height);
-    let bg = null;
-    if (aiReady) { try { busy('Rebuilding the background with AI…'); bg = fit(await loadImg(objURL(await aiBlob('/api/plate', await jpeg(imC, 1280)))), 1280); } catch (e) { if (e.message === 'auth') return; console.warn(e); } }
-    if (!bg) { busy('Rebuilding the background…'); bg = fillBehind(fit(imC, 1280), mask); }
     if (stale()) return;
-    d.img = await jpeg(imC, 1600, .9); d.bg = await jpeg(bg, 1280, .85); d.dm = await toBlob(dm, 'image/png'); d.thumb = await jpeg(imC, 420, .82);
-    d.changed = new Set(['src', 'img', 'bg', 'dm', 'thumb']);
-    setLayers(imC, bg, dm, .22);
+    d.img = await jpeg(imC, 1600, .9); d.dm = await toBlob(dm, 'image/png'); d.thumb = await jpeg(cutout(imC, mask, 420), 420, .85); d.bg = null;
+    d.changed = new Set(['src', 'img', 'dm', 'thumb']);
+    setLayers(imC, null, dm, .22);
     say(notes.length ? `Ready (${notes.join(', ')}: the AI models couldn't load here).` : 'Ready. Tilt to check the 3D, then save.');
   } finally { if (!stale()) { d.processing = false; busy(); updateSave(); } }
 }
@@ -824,7 +832,7 @@ function renderStyles() {
     b.addEventListener('click', () => { if (draft.style === k) return; draft.style = k; renderStyles(); if (draft.src || draft.img) { say(''); restyle(draft, k); } });
     box.append(b);
   }
-  $('styleHint').textContent = aiReady ? 'Styles and background are made with Gemini; the cut-out and depth run on your phone.' : (API ? 'AI styles need the Gemini key on the server — not set yet.' : 'AI styles need the deck server.');
+  $('styleHint').textContent = aiReady ? 'Styles are made with Gemini; the cut-out and depth run on your phone.' : (API ? 'AI styles need the Gemini key on the server — not set yet.' : 'AI styles need the deck server.');
 }
 function renderSwatches() {
   const box = $('swatches'); box.replaceChildren();
@@ -895,7 +903,7 @@ $('editor').addEventListener('submit', async e => {
   const {isNew, processing, changed, ...saved} = draft;
   saved.title = (saved.title || '').trim() || 'Untitled'; saved.updated = Date.now();
   $('eSave').disabled = true; say('Saving…');
-  try { await DB.put(saved, isNew ? new Set(['src', 'img', 'bg', 'dm', 'thumb']) : changed); }
+  try { await DB.put(saved, isNew ? new Set(['src', 'img', 'dm', 'thumb']) : changed); }
   catch (err) { if (err.message !== 'auth') { say('Could not save: ' + err.message); updateSave(); } return; }
   const i = cards.findIndex(c => c.id === saved.id); if (i >= 0) cards[i] = saved; else cards.push(saved);
   closeEditor(); await showCard(saved, isNew);
