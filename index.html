@@ -47,25 +47,29 @@ button{font:inherit;color:inherit}
 .foil{mix-blend-mode:color-dodge;opacity:calc(.16 + var(--hyp) * .42);filter:brightness(.68) contrast(1.6) saturate(1.5);
  background:repeating-linear-gradient(115deg,#ff4f9b 0%,#ffcf4a 6%,#6dff9e 12%,#46d4ff 18%,#a56bff 24%,#ff4f9b 30%);background-size:320% 320%;background-position:var(--mx) var(--my)}
 .spark{mix-blend-mode:color-dodge;opacity:calc(.3 + var(--hyp) * .6);background-image:var(--sp);background-size:120px 120px;background-position:calc(var(--tx) * -30px) calc(var(--ty) * -30px)}
-.face{position:absolute;inset:4cqw;border-radius:4.4cqw;overflow:hidden;isolation:isolate;
- background:linear-gradient(180deg,color-mix(in srgb,var(--c0) 55%,#1d2239) 0%,color-mix(in srgb,var(--c0) 40%,#13162a) 42%,#0c0d17 100%);
+.face{position:absolute;inset:4cqw;border-radius:4.4cqw;overflow:hidden;isolation:isolate;background:#020205;
  box-shadow:0 0 0 .5cqw rgba(10,8,25,.55),0 0 2.2cqw rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.18)}
+.box{position:absolute;inset:0;pointer-events:none;--wall:color-mix(in srgb,var(--c1) 16%,#0b0c16);
+ background:
+  linear-gradient(90deg,var(--wall),transparent) left center/max(2cqw,calc(11cqw - var(--tx) * 8cqw)) 100% no-repeat,
+  linear-gradient(270deg,var(--wall),transparent) right center/max(2cqw,calc(11cqw + var(--tx) * 8cqw)) 100% no-repeat,
+  linear-gradient(180deg,var(--wall),transparent) center top/100% max(2cqw,calc(11cqw - var(--ty) * 8cqw)) no-repeat,
+  linear-gradient(0deg,var(--wall),transparent) center bottom/100% max(2cqw,calc(11cqw + var(--ty) * 8cqw)) no-repeat,
+  radial-gradient(ellipse 75% 65% at calc(50% - var(--tx) * 6%) calc(46% - var(--ty) * 6%),#000 0%,#010103 55%,#05060c 100%);
+ box-shadow:inset 0 0 10cqw rgba(0,0,0,.85)}
 .art{position:absolute;inset:0 0 auto 0;height:82%;-webkit-mask-image:linear-gradient(180deg,#000 58%,transparent 100%);mask-image:linear-gradient(180deg,#000 58%,transparent 100%)}
 .art canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.aurora{position:absolute;left:-25%;right:-25%;top:8%;height:66%;pointer-events:none;mix-blend-mode:screen;filter:blur(8cqw);opacity:.8;
+.aurora{position:absolute;left:-25%;right:-25%;top:8%;height:66%;pointer-events:none;mix-blend-mode:screen;filter:blur(8cqw);opacity:.4;
  background:radial-gradient(34% 42% at 34% 58%,color-mix(in srgb,var(--c2) 70%,transparent),transparent 72%),radial-gradient(38% 44% at 68% 52%,color-mix(in srgb,var(--c1) 80%,transparent),transparent 72%),radial-gradient(40% 30% at 50% 78%,color-mix(in srgb,var(--c3) 45%,transparent),transparent 72%);
  transform:translate(calc(var(--tx) * -7cqw),calc(var(--ty) * -3cqw))}
 /* reverse-holo foil: printed on the glass only, fades exactly where the photo appears */
 .revwrap{position:absolute;inset:0;z-index:2;pointer-events:none;-webkit-mask-image:linear-gradient(180deg,transparent 46%,#000 76%);mask-image:linear-gradient(180deg,transparent 46%,#000 76%)}
-.rev,.rev2{position:absolute;inset:-3cqw;mix-blend-mode:screen;-webkit-mask-image:var(--pat);mask-image:var(--pat)}
-.rev{opacity:calc(.06 + var(--hyp) * .42);
- background:linear-gradient(112deg,transparent 22%,rgba(255,255,255,.8) 40%,color-mix(in srgb,var(--c3) 80%,#fff) 47%,color-mix(in srgb,var(--c2) 85%,#fff) 53%,rgba(140,215,255,.8) 59%,transparent 76%);
- background-size:320% 320%;background-position:var(--bx) var(--by);
+.rev{position:absolute;inset:-3cqw;mix-blend-mode:screen;-webkit-mask-image:var(--pat);mask-image:var(--pat)}
+.rev{opacity:calc(.05 + var(--hyp) * .42);
+ background:repeating-linear-gradient(112deg,#ff7ad9 0%,#ffd27a 7%,#7affc1 14%,#7ad7ff 21%,#b27aff 28%,#ff7ad9 35%);
+ background-size:300% 300%;background-position:var(--bx) var(--by);
  -webkit-mask-size:26cqw 26cqw;mask-size:26cqw 26cqw;
  -webkit-mask-position:calc(var(--tx) * 1.4cqw) calc(var(--ty) * 1.4cqw);mask-position:calc(var(--tx) * 1.4cqw) calc(var(--ty) * 1.4cqw)}
-.rev2{opacity:calc(var(--hyp) * .35);-webkit-mask-image:var(--grain);mask-image:var(--grain);
- background:linear-gradient(112deg,transparent 30%,#fff 50%,transparent 70%);background-size:300% 300%;background-position:calc(100% - var(--bx)) var(--by);
- -webkit-mask-size:16cqw 16cqw;mask-size:16cqw 16cqw;-webkit-mask-position:calc(var(--tx) * 3cqw) calc(var(--ty) * 3cqw);mask-position:calc(var(--tx) * 3cqw) calc(var(--ty) * 3cqw)}
 .content{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;flex-direction:column;align-items:stretch;padding:16cqw 5.5cqw 5cqw;background:linear-gradient(180deg,transparent,rgba(8,8,18,.5) 30%,rgba(8,8,18,.8))}
 .card.enter .content{animation:rise 1s 1.4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes rise{from{opacity:0;translate:0 4cqw}}
@@ -174,18 +178,19 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
  <div class="halo" id="halo"></div>
  <div class="card" id="card">
   <canvas class="heat" id="heat"></canvas>
-  <div class="foil"></div><div class="spark"></div>
+  <div class="foil"></div>
   <div class="face">
+   <div class="box"></div>
    <div class="aurora"></div>
    <div class="art" id="art"><canvas id="gl"></canvas></div>
-   <div class="revwrap"><div class="rev"></div><div class="rev2"></div></div>
+   <div class="revwrap"><div class="rev"></div></div>
    <div class="badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.3 6.9 6.9 2.6-6.9 2.6L12 21.5l-2.3-6.9L2.8 12l6.9-2.6z" fill="#eef0ff"/></svg></div>
    <div class="content">
     <h1 class="title" id="title"></h1>
     <p class="text" id="desc"></p>
     <div class="attacks" id="attacks"></div>
    </div>
-   <div class="shine"></div><div class="glitter"></div>
+   <div class="shine"></div>
    <div class="busy" id="busy" hidden></div>
   </div>
   <div class="sheen"></div><div class="glare"></div><div class="sweep"></div>
@@ -434,32 +439,35 @@ function program(gl, fs, names) {
   const U = {}; for (const n of names) U[n] = gl.getUniformLocation(p, n); return U;
 }
 const gl = cv.getContext('webgl', {antialias: false, premultipliedAlpha: false});
-const FS = `varying vec2 v;uniform sampler2D uImg,uBg,uDM;uniform vec2 uTilt,uScale,uOff;uniform float uStr,uZoom,uRelief;uniform vec3 uTint;
+const FS = `varying vec2 v;uniform sampler2D uImg,uDM;uniform vec2 uTilt,uScale,uOff;uniform float uStr,uZoom,uRelief,uDepth,uTime;uniform vec3 uTint;
 vec2 M(vec2 u){return clamp(u,0.,1.)*uScale+uOff;}
 vec4 DM(vec2 u){return texture2D(uDM,M(u));}
 void main(){
- vec2 b=(v-.5)/uZoom+.5, s=b;
+ vec2 b=(v-.5)/uZoom+.5+uTilt*uStr*uDepth, s=b;
  for(int i=0;i<8;i++){ s=mix(s, b-uTilt*uStr*(DM(s).r-.5)*uRelief, .6); }
  vec4 dm=DM(s); float a=smoothstep(.3,.7,dm.g);
  vec3 fg=texture2D(uImg,M(s)).rgb;
  float e=1./300.;
  float rx=DM(s+vec2(e,0.)).r-DM(s-vec2(e,0.)).r, ry=DM(s+vec2(0.,e)).r-DM(s-vec2(0.,e)).r;
- vec3 n=normalize(vec3(-rx*16.,-ry*16.,1.));
+ vec3 n=normalize(vec3(-rx*24.,-ry*24.,1.));
  float tl=min(1.,length(uTilt));
  vec3 L=normalize(vec3(uTilt*1.1,.85));
- fg*=1.+.3*(dot(n,L)-L.z);
- float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),22.)*a;
- fg+=uTint*spec*.28*tl;
- float rim=smoothstep(.12,.42,dm.g)*(1.-smoothstep(.55,.92,dm.g));
- fg+=uTint*rim*(.08+.3*tl);
- vec2 so=b+uTilt*uStr*.9+vec2(0.,.015); float sh=0.;
- for(int i=0;i<9;i++){ vec2 o=vec2(mod(float(i),3.)-1.,floor(float(i)/3.)-1.)*.02; sh+=DM(so+o).g; }
- sh=smoothstep(.05,.85,sh/9.)*.6;
+ fg*=1.+.45*(dot(n,L)-L.z);
+ float lum=dot(fg,vec3(.299,.587,.114)), hi=smoothstep(.45,.95,lum);
+ float spec=pow(max(dot(reflect(-L,n),vec3(0.,0.,1.)),0.),22.)*hi;
+ fg+=(vec3(1.)*.32+uTint*.12)*spec*(.3+.7*tl);
+ float ph=dot(n.xy,uTilt)*2.5+(s.x*.7+s.y)*3.+uTilt.x*1.5+uTime*.15;
+ vec3 iri=.5+.5*cos(6.2831*(ph+vec3(0.,.33,.67)));
+ float glim=(.05+.14*tl)*(.35+.65*hi)*(.8+.2*sin(uTime*1.7+s.y*31.+s.x*19.));
+ fg+=iri*lum*glim;
+ vec2 so=b+uTilt*uStr*.9+vec2(0.,.035); float sh=0.;
+ for(int j=0;j<5;j++) for(int i=0;i<5;i++){ vec2 o=(vec2(float(i),float(j))-2.)*.055; sh+=DM(so+o).g; }
+ sh=smoothstep(0.,.9,sh/25.)*.42;
  float oa=a+(1.-a)*sh;
  gl_FragColor=vec4(fg*a/max(oa,.001),oa);
 }`;
 let U = null;
-try { if (gl) { U = program(gl, FS, ['uImg', 'uBg', 'uDM', 'uTilt', 'uScale', 'uOff', 'uStr', 'uZoom', 'uRelief', 'uTint']); gl.uniform1i(U.uImg, 0); gl.uniform1i(U.uBg, 1); gl.uniform1i(U.uDM, 2); } } catch (e) { console.warn(e); U = null; }
+try { if (gl) { U = program(gl, FS, ['uImg', 'uDM', 'uTilt', 'uScale', 'uOff', 'uStr', 'uZoom', 'uRelief', 'uDepth', 'uTime', 'uTint']); gl.uniform1i(U.uImg, 0); gl.uniform1i(U.uDM, 2); } } catch (e) { console.warn(e); U = null; }
 const ctx2d = U ? null : cv.getContext('2d');
 let ready = false, dirty = true, imgCanvas = null, view = {pos: .25, ia: 1};
 function tex(unit, src) {
@@ -474,7 +482,7 @@ function fit(src, max) {
 function setLayers(img, bg, dm, pos = .25) {
   const max = U ? Math.min(2048, gl.getParameter(gl.MAX_TEXTURE_SIZE)) : 1600;
   imgCanvas = fit(img, max); view.ia = imgCanvas.width / imgCanvas.height; view.pos = pos;
-  if (U) { tex(0, imgCanvas); tex(1, fit(bg || img, 1280)); tex(2, fit(dm, 512)); }
+  if (U) { tex(0, imgCanvas); tex(2, fit(dm, 512)); }
   ready = true; dirty = true; resize();
 }
 function resize() {
@@ -488,7 +496,7 @@ function draw(t) {
   if (U) {
     gl.viewport(0, 0, cv.width, cv.height);
     gl.uniform2f(U.uTilt, t.x, t.y); gl.uniform2f(U.uScale, sc[0], sc[1]); gl.uniform2f(U.uOff, off[0], off[1]);
-    gl.uniform1f(U.uStr, .05); gl.uniform1f(U.uZoom, 1.06); gl.uniform1f(U.uRelief, .75); gl.uniform3f(U.uTint, ...themeRGB[3]);
+    gl.uniform1f(U.uStr, .05); gl.uniform1f(U.uZoom, 1.1); gl.uniform1f(U.uRelief, 1.125); gl.uniform1f(U.uDepth, .9); gl.uniform1f(U.uTime, (performance.now() / 1000) % 1000); gl.uniform3f(U.uTint, ...themeRGB[3]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   } else {
     const W = cv.width, H = cv.height;
@@ -591,9 +599,9 @@ function frame(now) {
     rs.setProperty('--tx', cur.x.toFixed(4)); rs.setProperty('--ty', cur.y.toFixed(4)); rs.setProperty('--hyp', Math.min(1, Math.hypot(cur.x, cur.y)).toFixed(3));
     rs.setProperty('--mx', (50 + cur.x * 50).toFixed(2) + '%'); rs.setProperty('--my', (50 + cur.y * 50).toFixed(2) + '%');
     rs.setProperty('--bx', (50 + cur.x * 30).toFixed(2) + '%'); rs.setProperty('--by', (50 + cur.y * 30).toFixed(2) + '%');
-    draw(cur); prev = {...cur}; dirty = false;
+    prev = {...cur}; dirty = false;
   }
-  drawHeat(now, cur);
+  draw(cur); drawHeat(now, cur);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -796,10 +804,20 @@ async function processInto(d, style) {
   const my = ++jobId; d.processing = true; updateSave();
   const stale = () => my !== jobId;
   try {
-    let imgBlob = d.src; const notes = [];
+    let imgBlob = d.src; const notes = []; const changed = new Set(['img', 'dm', 'thumb']);
+    if (d.isNew && d.src) changed.add('src');
     if (aiReady) {
-      try { busy('Gemini sta rielaborando la foto…'); imgBlob = await aiBlob('/api/stylize', d.src, {style}); }
-      catch (e) { if (e.message === 'auth') return; console.warn(e); notes.push('Gemini non ha risposto, uso la foto così com’è'); }
+      try {
+        if (!(d.pose instanceof Blob)) await DB.ensure(d, ['pose']);
+        if (!(d.pose instanceof Blob)) {
+          if (!(d.src instanceof Blob)) await DB.ensure(d, ['src']);
+          busy('Gemini rimette in posa la foto…');
+          d.pose = await jpeg(await loadImg(objURL(await aiBlob('/api/repose', d.src))), 1600, .9); changed.add('pose');
+          if (stale()) return;
+        }
+        if (style === 'realistic') imgBlob = d.pose;
+        else { busy('Gemini applica lo stile…'); imgBlob = await aiBlob('/api/stylize', d.pose, {style}); }
+      } catch (e) { if (e.message === 'auth') return; console.warn(e); notes.push('Gemini non ha risposto, uso la foto così com’è'); imgBlob = d.pose instanceof Blob ? d.pose : d.src; }
     } else notes.push('Gemini non ancora collegato, uso la foto così com’è');
     const imC = fit(await loadImg(objURL(imgBlob)), 1600); if (stale()) return;
     setLayers(imC, null, packDM(guessRelief(64, 80), guessMask(64, 80), imC.width, imC.height), PHOTO_POS);
@@ -810,7 +828,7 @@ async function processInto(d, style) {
     const dm = packDM(depth, mask, imC.width, imC.height);
     if (stale()) return;
     d.img = await jpeg(imC, 1600, .9); d.dm = await toBlob(dm, 'image/png'); d.thumb = await jpeg(cutout(imC, mask, 420), 420, .85); d.bg = null;
-    d.changed = new Set(['src', 'img', 'dm', 'thumb']);
+    d.changed = new Set([...(d.changed || []), ...changed]);
     setLayers(imC, null, dm, PHOTO_POS);
     say(notes.length ? `Pronta (${notes.join('; ')}).` : 'Pronta. Inclina per vedere il 3D, poi salva.');
     if (d.saveWhenDone) { d.processing = false; setTimeout(() => $('editor').requestSubmit(), 0); }
@@ -823,7 +841,7 @@ async function takePhoto(file) {
   busy('Preparo la foto…');
   const im = await loadImg(objURL(file)).catch(() => null);
   if (!im) { busy(); say('Impossibile leggere questa immagine.'); return; }
-  d.src = await jpeg(im, 1600, .9);
+  d.src = await jpeg(im, 1600, .9); d.pose = null; d.changed = new Set(['src']);
   const pc = fit(im, 1600); setLayers(pc, null, packDM(guessRelief(64, 80), guessMask(64, 80), pc.width, pc.height), PHOTO_POS);
   if (d.style) await processInto(d, d.style);
   else { busy('Scegli uno stile per iniziare', true); say('Scegli uno stile: l’elaborazione parte subito e procede mentre compili la carta.'); updateSave(); }
@@ -892,8 +910,9 @@ function renderAttacks() {
   $('addAtk').hidden = draft.attacks.length >= 3;
 }
 async function restyle(d, k) {
-  if (!d.src) { busy('Carico l’originale…'); await DB.ensure(d, ['src']); }
-  if (!d.src) { busy(); say('Manca la foto originale: scattala o caricala di nuovo.'); return; }
+  busy('Carico la posa salvata…'); await DB.ensure(d, ['pose']);
+  if (!(d.pose instanceof Blob)) await DB.ensure(d, ['src']);
+  if (!(d.pose instanceof Blob) && !(d.src instanceof Blob)) { busy(); say('Manca la foto originale: scattala o caricala di nuovo.'); return; }
   processInto(d, k);
 }
 function openEditor(c, isNew) {
@@ -920,7 +939,7 @@ $('editor').addEventListener('submit', async e => {
   const {isNew, processing, changed, saveWhenDone, ...saved} = draft;
   saved.title = (saved.title || '').trim() || 'Senza nome'; saved.updated = Date.now();
   $('eSave').disabled = true; say('Salvataggio…');
-  try { await DB.put(saved, isNew ? new Set(['src', 'img', 'dm', 'thumb']) : changed); }
+  try { await DB.put(saved, isNew ? new Set(['src', 'pose', 'img', 'dm', 'thumb']) : changed); }
   catch (err) { if (err.message !== 'auth') { say('Salvataggio non riuscito: ' + err.message); updateSave(); } return; }
   const i = cards.findIndex(c => c.id === saved.id); if (i >= 0) cards[i] = saved; else cards.push(saved);
   closeEditor(); await showCard(saved, isNew);

@@ -4,15 +4,15 @@
 
 const ORIGINS = ['https://franzbitbit.github.io', 'http://localhost:8765'];
 const MODEL = 'gemini-3.1-flash-image';
-const KINDS = ['src', 'img', 'bg', 'dm', 'thumb'];
+const KINDS = ['src', 'pose', 'img', 'bg', 'dm', 'thumb'];
 const MAX_BLOB = 1900000;          // D1 row limit is ~2 MB
 const MAX_CARDS = 200;
-const BASE = 'Recreate this exact person as a medium shot (from the waist up), facing the camera in a natural, relaxed, neutral posture, centred, with a little empty space above the head. Keep their identity, face, hairstyle, the same facial expression, their clothing and any props or accessories they hold or wear. Plain, empty, very dark background with a soft rim light separating the subject. Portrait orientation. No text, logos, emblems, borders or frames. Style: ';
+const REPOSE = 'Recreate this exact person as a medium shot (from the waist up), facing the camera in a natural, relaxed, neutral posture, centred, with a little empty space above the head. Keep their identity, face, hairstyle, the same facial expression, their clothing and any props or accessories they hold or wear. Photorealistic and polished, like a high-end editorial portrait: natural skin texture, soft professional studio lighting, crisp detail, subtle colour grading. Plain, empty, very dark background. Portrait orientation. No text, logos, emblems, borders or frames.';
+const RESTYLE = 'Restyle this image. Keep exactly the same person, pose, framing, composition, facial expression, clothing and props; change only the rendering style. Keep the plain, empty, very dark background. No text, logos, emblems, borders or frames. Style: ';
 const PROMPTS = {
-  realistic: BASE + 'photorealistic and polished, like a high-end editorial portrait: natural skin texture, professional studio lighting, crisp detail, subtle colour grading.',
-  ghibli: BASE + 'hand-painted 2D animated-film look in the tradition of classic Japanese animation studios: soft painterly shading, gentle warm light, clean expressive line work, watercolour textures.',
-  wizard: BASE + 'enchanted fantasy portrait with a magical wizarding-school mood: warm candlelit glow, floating golden sparks, subtle magical atmosphere, rich painterly detail.',
-  tech: BASE + 'cool digital-tech look: sleek cyber aesthetic, cyan and violet rim lighting, subtle holographic interface glints and fine circuit-like light lines around the edges, crisp high-contrast finish.'
+  ghibli: RESTYLE + 'hand-painted 2D animated-film look in the tradition of classic Japanese animation studios: soft painterly shading, gentle warm light, clean expressive line work, watercolour textures.',
+  wizard: RESTYLE + 'enchanted fantasy portrait with a magical wizarding-school mood: warm candlelit glow, floating golden sparks, subtle magical atmosphere, rich painterly detail.',
+  tech: RESTYLE + 'cool digital-tech look: sleek cyber aesthetic, cyan and violet rim lighting, subtle holographic interface glints and fine circuit-like light lines around the edges, crisp high-contrast finish.'
 };
 
 const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -136,10 +136,10 @@ export default {
         }
       }
 
-      if (path === '/api/stylize' && req.method === 'POST') {
+      if ((path === '/api/repose' || path === '/api/stylize') && req.method === 'POST') {
         if (!env.GEMINI_API_KEY) return json({error: 'Servizio AI non configurato.'}, 503);
         const {style, mime, data} = await req.json().catch(() => ({}));
-        const prompt = Object.hasOwn(PROMPTS, style) ? PROMPTS[style] : null;
+        const prompt = path === '/api/repose' ? REPOSE : (Object.hasOwn(PROMPTS, style) ? PROMPTS[style] : null);
         if (!prompt || typeof data !== 'string' || data.length > 8e6 || !/^image\/(jpeg|png|webp)$/.test(mime || '')) return json({error: 'Bad request'}, 400);
         return json(await gemini(env, prompt, mime, data));
       }
